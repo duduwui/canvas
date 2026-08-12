@@ -28,6 +28,7 @@ export class CanvasEditor {
     this.handleResizeMove = this.handleResizeMove.bind(this);
     this.handleResizeEnd = this.handleResizeEnd.bind(this);
     this.handleDoubleClick = this.handleDoubleClick.bind(this);
+    this.handleTextChange = this.handleTextChange.bind(this);
     
     // Drag & Resize state tracking
     this.dragState = {
@@ -53,6 +54,7 @@ export class CanvasEditor {
     this.ui = new ShadowUI({
       onToggleActive: () => this.toggleActive(),
       onStyleChange: (prop, val) => this.handleStyleChange(prop, val),
+      onTextChange: (text) => this.handleTextChange(text),
       onSave: () => this.saveChanges(),
       onCancel: () => this.cancelChanges(),
       onReset: () => this.resetAllChanges()
@@ -197,7 +199,8 @@ export class CanvasEditor {
     };
     
     // Open Inspector overlay
-    this.ui.openInspector(name, styles);
+    const textContent = el.children.length === 0 ? el.textContent.trim() : el.innerHTML.trim();
+    this.ui.openInspector(name, styles, textContent);
   }
 
   deselectElement() {
@@ -288,6 +291,23 @@ export class CanvasEditor {
     
     // Sync persistence live draft state
     applyModifications(this.draftChanges, true);
+  }
+
+  handleTextChange(text) {
+    if (!this.selectedElement) return;
+    
+    // Update target text content
+    if (this.selectedElement.children.length === 0) {
+      this.selectedElement.textContent = text;
+    } else {
+      this.selectedElement.innerHTML = text;
+    }
+    
+    // Record text change in drafts
+    this.recordTextChange(this.selectedSelector, text);
+    
+    // Adjust overlay highlights to dynamic boundary size
+    this.repositionOverlays();
   }
 
   /* --- Drag Engine --- */

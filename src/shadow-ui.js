@@ -93,6 +93,15 @@ export class ShadowUI {
         </div>
         
         <div class="inspector-content">
+          <!-- Content -->
+          <div class="inspector-section" id="section-content">
+            <div class="section-title">Content</div>
+            <div class="control-row full-width">
+              <label class="control-label">Text Content</label>
+              <textarea class="control-input" id="inspector-text-content" rows="2" style="resize: vertical; min-height: 50px;" placeholder="Click and type to change text..."></textarea>
+            </div>
+          </div>
+
           <!-- Spacing -->
           <div class="inspector-section">
             <div class="section-title">Spacing (px)</div>
@@ -336,12 +345,21 @@ export class ShadowUI {
         const val = input.value;
         const colorInput = this.shadowRoot.querySelector(`input[type="color"][data-style="${prop}"]`);
         
-        if (colorInput && /^#[0-9A-F]{6}$/i.test(val)) {
-          colorInput.value = val;
+        if (colorInput) {
+          const hex = cssColorToHex(val);
+          colorInput.value = hex;
           colorInput.parentElement.style.backgroundColor = val;
         }
         
         this.triggerStyleChange(prop, val);
+      }
+    });
+
+    // Text Content Input Event
+    const textContentInput = this.shadowRoot.getElementById('inspector-text-content');
+    textContentInput.addEventListener('input', (e) => {
+      if (this.callbacks.onTextChange) {
+        this.callbacks.onTextChange(e.target.value);
       }
     });
 
@@ -427,9 +445,15 @@ export class ShadowUI {
     this.hideSelection();
   }
 
-  openInspector(elementName, currentStyles) {
+  openInspector(elementName, currentStyles, textContent = '') {
     this.shadowRoot.getElementById('inspector-element-title').textContent = elementName;
     this.fillInspectorValues(currentStyles);
+    
+    const textContentInput = this.shadowRoot.getElementById('inspector-text-content');
+    if (textContentInput) {
+      textContentInput.value = textContent;
+    }
+    
     this.inspector.classList.add('open');
   }
 
@@ -465,7 +489,7 @@ export class ShadowUI {
           // Parse rgb/rgba/hex to hex for native input
           const hex = rgbToHex(val) || '#000000';
           input.value = hex;
-          input.parentElement.style.backgroundColor = hex;
+          input.parentElement.style.backgroundColor = val;
           
           // Sync text input
           const syncInput = this.shadowRoot.querySelector(`[data-style-sync="${prop}"]`);
@@ -523,13 +547,30 @@ export class ShadowUI {
 function rgbToHex(rgbStr) {
   if (!rgbStr) return null;
   if (rgbStr.startsWith('#')) return rgbStr;
+  if (rgbStr === 'transparent') return '#ffffff';
   
   const match = rgbStr.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/);
   if (!match) return null;
+  
+  const alpha = match[4] !== undefined ? parseFloat(match[4]) : 1;
+  if (alpha === 0) return '#ffffff'; // Fallback for native picker
   
   const r = parseInt(match[1]).toString(16).padStart(2, '0');
   const g = parseInt(match[2]).toString(16).padStart(2, '0');
   const b = parseInt(match[3]).toString(16).padStart(2, '0');
   
   return `#${r}${g}${b}`;
+}
+
+// Helper to resolve any CSS color format to standard Hex for native input
+function cssColorToHex(colorStr) {
+  if (!colorStr || colorStr === 'transparent') return '#ffffff';
+  
+  const temp = document.createElement('div');
+  temp.style.color = colorStr;
+  document.body.appendChild(temp);
+  const comp = window.getComputedStyle(temp).color;
+  document.body.removeChild(temp);
+  
+  return rgbToHex(comp) || '#ffffff';
 }
