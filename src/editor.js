@@ -13,9 +13,9 @@ export class CanvasEditor {
     this.active = false;
     this.selectedElement = null;
     this.selectedSelector = '';
+    this._originalOverflow = '';
     
     // Store draft changes in this session before Save/Cancel
-    // Format: { [selector]: { styles: {}, text: '' } }
     this.draftChanges = {};
     
     // Bind event handlers
@@ -69,7 +69,6 @@ export class CanvasEditor {
       if (!this.active) return;
       if (e.key === 'Escape') {
         if (this.selectedElement) {
-          // If editing text, blur to finish editing
           if (this.selectedElement.contentEditable === 'true') {
             this.selectedElement.blur();
           }
@@ -108,7 +107,6 @@ export class CanvasEditor {
     document.addEventListener('click', this.handleMouseClick, true);
     document.addEventListener('dblclick', this.handleDoubleClick, true);
     
-    // Bind Drag/Resize triggers inside the Shadow DOM overlay
     const dragHandle = this.ui.selectionOverlay.querySelector('[data-action="drag"]');
     dragHandle.addEventListener('mousedown', this.handleDragStart);
 
@@ -123,11 +121,31 @@ export class CanvasEditor {
     document.removeEventListener('dblclick', this.handleDoubleClick, true);
   }
 
-  /**
-   * Prevents selecting components inside our Shadow DOM editor.
-   */
   isEditorElement(target) {
     return target === this.ui.root || this.ui.root.contains(target);
+  }
+
+  /**
+   * Applies a concentric offset padding (6px) to overlays
+   * so they wrap elements without covering original borders.
+   */
+  calculateOverlayRect(el) {
+    const rect = el.getBoundingClientRect();
+    const computed = window.getComputedStyle(el);
+    const offset = 6;
+    
+    // Parse element border-radius
+    let radius = parseFloat(computed.borderRadius) || 0;
+    
+    return {
+      top: rect.top - offset,
+      left: rect.left - offset,
+      width: rect.width + (offset * 2),
+      height: rect.height + (offset * 2),
+      borderRadius: `${radius + offset}px`,
+      originalWidth: rect.width,
+      originalHeight: rect.height
+    };
   }
 
   handleMouseMove(e) {
@@ -135,26 +153,16 @@ export class CanvasEditor {
     if (this.isEditorElement(e.target)) return;
     
     const target = e.target;
-    const rect = target.getBoundingClientRect();
-    
     const name = `${target.tagName.toLowerCase()}${target.classList.length ? '.' + Array.from(target.classList).join('.') : ''}`;
     
-    // Add scroll offsets to position overlay absolutely relative to viewport
-    const viewportRect = {
-      top: rect.top,
-      left: rect.left,
-      width: rect.width,
-      height: rect.height
-    };
-    
-    this.ui.showHover(viewportRect, name);
+    const overlayRect = this.calculateOverlayRect(target);
+    this.ui.showHover(overlayRect, name);
   }
 
   handleMouseClick(e) {
     if (!this.active) return;
     if (this.isEditorElement(e.target)) return;
 
-    // Prevent navigation / default actions on clicked elements in edit mode
     e.preventDefault();
     e.stopPropagation();
 
@@ -169,11 +177,15 @@ export class CanvasEditor {
     this.selectedElement = el;
     this.selectedSelector = getUniqueSelector(el);
     
+    // Page Scroll Locking
+    this._originalOverflow = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = 'hidden';
+    
     // Style current selected outline
-    const rect = el.getBoundingClientRect();
+    const overlayRect = this.calculateOverlayRect(el);
     const name = `${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''}`;
     
-    this.ui.showSelection(rect, name);
+    this.ui.showSelection(overlayRect, name);
     
     // Get and parse computed style properties
     const computed = window.getComputedStyle(el);
@@ -190,15 +202,27 @@ export class CanvasEditor {
       height: el.style.height || computed.height,
       fontSize: computed.fontSize,
       fontWeight: computed.fontWeight,
+      lineHeight: computed.lineHeight,
+      letterSpacing: computed.letterSpacing,
+      fontStyle: computed.fontStyle,
       color: computed.color,
       textAlign: computed.textAlign,
+      display: computed.display,
+      zIndex: computed.zIndex === 'auto' ? '' : computed.zIndex,
+      flexDirection: computed.flexDirection,
+      justifyContent: computed.justifyContent,
+      alignItems: computed.alignItems,
+      flexWrap: computed.flexWrap,
+      borderWidth: computed.borderWidth,
+      borderStyle: computed.borderStyle,
+      borderColor: computed.borderColor,
       backgroundColor: computed.backgroundColor,
       borderRadius: computed.borderRadius,
       opacity: computed.opacity,
       boxShadow: el.style.boxShadow || ''
     };
     
-    // Open Inspector overlay
+    // Open Inspector panel
     const textContent = el.children.length === 0 ? el.textContent.trim() : el.innerHTML.trim();
     this.ui.openInspector(name, styles, textContent);
   }
@@ -208,6 +232,14 @@ export class CanvasEditor {
       if (this.selectedElement.contentEditable === 'true') {
         this.selectedElement.blur();
       }
+      
+      // Page Scroll Unlocking
+      if (this._originalOverflow !== undefined) {
+        document.documentElement.style.overflow = this._originalOverflow;
+      } else {
+        document.documentElement.style.overflow = '';
+      }
+      
       this.selectedElement = null;
       this.selectedSelector = '';
     }
@@ -217,8 +249,8 @@ export class CanvasEditor {
 
   repositionOverlays() {
     if (!this.selectedElement) return;
-    const rect = this.selectedElement.getBoundingClientRect();
-    this.ui.updateSelectionRect(rect);
+    const overlayRect = this.calculateOverlayRect(this.selectedElement);
+    this.ui.updateSelectionRect(overlayRect);
   }
 
   /* --- Text Editing Engine --- */
@@ -232,11 +264,9 @@ export class CanvasEditor {
     const target = e.target;
     this.selectElement(target);
     
-    // Enable inline text edit
     target.contentEditable = 'true';
     target.focus();
     
-    // Place cursor at the end
     const range = document.createRange();
     range.selectNodeContents(target);
     range.collapse(false);
@@ -244,7 +274,6 @@ export class CanvasEditor {
     sel.removeAllRanges();
     sel.addRange(range);
     
-    // Select styling outline inside Shadow DOM
     target.style.outline = '2px dashed var(--accent-color)';
     
     const onBlur = () => {
@@ -254,19 +283,23 @@ export class CanvasEditor {
       const newText = target.innerHTML;
       this.recordTextChange(this.selectedSelector, newText);
       this.repositionOverlays();
+      
+      // Update text in inspector if it's open
+      const textContentInput = this.ui.shadowRoot.getElementById('inspector-text-content');
+      if (textContentInput) {
+        textContentInput.value = target.children.length === 0 ? target.textContent.trim() : target.innerHTML.trim();
+      }
+      
       target.removeEventListener('blur', onBlur);
       target.removeEventListener('keydown', onKeyDown);
     };
     
     const onKeyDown = (event) => {
-      // Escape to cancel or Enter (without shift) to confirm
       if (event.key === 'Escape') {
-        // Revert to original
         const orig = this.draftChanges[this.selectedSelector]?.text;
         if (orig !== undefined) {
           target.innerHTML = orig;
         } else {
-          // Revert using persistence cache
           const saved = getPageModifications()[this.selectedSelector]?.text;
           if (saved !== undefined) {
             target.innerHTML = saved;
@@ -289,24 +322,19 @@ export class CanvasEditor {
     }
     this.draftChanges[selector].text = newText;
     
-    // Sync persistence live draft state
     applyModifications(this.draftChanges, true);
   }
 
   handleTextChange(text) {
     if (!this.selectedElement) return;
     
-    // Update target text content
     if (this.selectedElement.children.length === 0) {
       this.selectedElement.textContent = text;
     } else {
       this.selectedElement.innerHTML = text;
     }
     
-    // Record text change in drafts
     this.recordTextChange(this.selectedSelector, text);
-    
-    // Adjust overlay highlights to dynamic boundary size
     this.repositionOverlays();
   }
 
@@ -318,7 +346,6 @@ export class CanvasEditor {
     const el = this.selectedElement;
     const computed = window.getComputedStyle(el);
     
-    // Force relative positioning if element is static to make drag offsets work
     if (computed.position === 'static') {
       el.style.position = 'relative';
       this.recordStyleChange('position', 'relative');
@@ -348,7 +375,6 @@ export class CanvasEditor {
     this.selectedElement.style.left = `${newLeft}px`;
     this.selectedElement.style.top = `${newTop}px`;
     
-    // Record visual positions
     this.recordStyleChange('left', `${newLeft}px`);
     this.recordStyleChange('top', `${newTop}px`);
     
@@ -399,9 +425,8 @@ export class CanvasEditor {
     let newLeft = state.startLeft;
     let newTop = state.startTop;
     
-    const minSize = 10; // minimum dimension
+    const minSize = 10;
     
-    // Calculate new dimensions based on handles
     if (state.handle.includes('r')) {
       newWidth = Math.max(minSize, state.startWidth + dx);
     }
@@ -423,7 +448,6 @@ export class CanvasEditor {
       }
     }
     
-    // Set style properties on target
     if (state.handle.includes('r') || state.handle.includes('l')) {
       el.style.width = `${newWidth}px`;
       this.recordStyleChange('width', `${newWidth}px`);
@@ -433,7 +457,6 @@ export class CanvasEditor {
       this.recordStyleChange('height', `${newHeight}px`);
     }
     
-    // Update top/left offset if resizing from left or top edges
     if (state.handle.includes('l')) {
       el.style.left = `${newLeft}px`;
       this.recordStyleChange('left', `${newLeft}px`);
@@ -456,11 +479,8 @@ export class CanvasEditor {
   handleStyleChange(prop, val) {
     if (!this.selectedElement) return;
     
-    // Apply layout styles directly to selected element
     this.selectedElement.style[prop] = val;
     this.recordStyleChange(prop, val);
-    
-    // Reposition highlighters in real-time
     this.repositionOverlays();
   }
 
@@ -480,12 +500,9 @@ export class CanvasEditor {
   }
 
   /* --- Save / Cancel Actions --- */
-  
   saveChanges() {
-    // 1. Get existing saved changes
     const pageMods = getPageModifications();
     
-    // 2. Merge current draft edits into page modifications
     Object.entries(this.draftChanges).forEach(([selector, draft]) => {
       if (!pageMods[selector]) {
         pageMods[selector] = { styles: {}, text: undefined };
@@ -503,37 +520,25 @@ export class CanvasEditor {
       }
     });
     
-    // 3. Save to localStorage
     savePageModifications(pageMods);
-    
-    // 4. Reset our draft state since it is now permanently saved
     this.draftChanges = {};
     
-    // 5. Generate CSS diff code for developer
     const cssCode = this.generateCSSExport(pageMods);
     
-    // 6. Alert success and show modal
     this.ui.showToast('All modifications saved successfully!', 'success');
     this.ui.showCodeExport(cssCode);
   }
 
   cancelChanges() {
-    // 1. Revert drafts in the DOM
     revertModifications(this.draftChanges);
-    
-    // 2. Empty the draft memory
     this.draftChanges = {};
-    
-    // 3. Clean selections and UI
     this.ui.showToast('Changes discarded.', 'info');
     this.deselectElement();
   }
 
   resetAllChanges() {
-    // Clear localStorage and revert styles
     clearPageModifications();
     this.draftChanges = {};
-    
     this.ui.showToast('All visual overrides reset.', 'danger');
     this.deselectElement();
   }
