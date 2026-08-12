@@ -48,6 +48,27 @@ export function savePageModifications(pageMods) {
 }
 
 /**
+ * Injects a Google Font stylesheet link into the head of the light DOM.
+ * @param {string} url 
+ */
+export function injectFontStylesheet(url) {
+  if (!url) return;
+  // Standardize Google Font URL structure
+  if (!url.startsWith('http') && !url.startsWith('//')) {
+    // If it's just a font name, we can try importing from Google Fonts
+    const fontName = encodeURIComponent(url.trim());
+    url = `https://fonts.googleapis.com/css2?family=${fontName}:wght@300;400;500;600;700;900&display=swap`;
+  }
+  
+  if (document.querySelector(`link[href="${url}"]`)) return;
+  
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = url;
+  document.head.appendChild(link);
+}
+
+/**
  * Applies a set of modifications to the page elements.
  * Backs up original values before applying modifications.
  * 
@@ -56,6 +77,7 @@ export function savePageModifications(pageMods) {
  */
 export function applyModifications(modifications, isDraft = false) {
   Object.entries(modifications).forEach(([selector, changes]) => {
+    if (selector === '__fontImports') return; // Skip metadata key
     const element = document.querySelector(selector);
     if (!element) return;
 
@@ -101,6 +123,7 @@ export function applyModifications(modifications, isDraft = false) {
  */
 export function revertModifications(draftModifications) {
   Object.keys(draftModifications).forEach(selector => {
+    if (selector === '__fontImports') return;
     const element = document.querySelector(selector);
     const original = originalStates.get(selector);
     
@@ -128,6 +151,18 @@ export function revertModifications(draftModifications) {
  */
 export function initSavedModifications() {
   const pageMods = getPageModifications();
+  
+  // Inject saved custom fonts
+  if (pageMods.__fontImports && Array.isArray(pageMods.__fontImports)) {
+    pageMods.__fontImports.forEach(url => {
+      try {
+        injectFontStylesheet(url);
+      } catch (e) {
+        console.error('Canvas: Failed to inject font URL', url, e);
+      }
+    });
+  }
+
   applyModifications(pageMods, false);
 }
 

@@ -1,16 +1,14 @@
-const S = '::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#ffffff0d}::-webkit-scrollbar-thumb{background:#fff3;border-radius:4px}::-webkit-scrollbar-thumb:hover{background:#fff6}:host{--primary-color: #6366f1;--primary-glow: rgba(99, 102, 241, .5);--accent-color: #06b6d4;--accent-glow: rgba(6, 182, 212, .5);--danger-color: #ef4444;--success-color: #10b981;--font-family: "Outfit", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;--bg-glass: rgba(15, 23, 42, .85);--bg-glass-hover: rgba(15, 23, 42, .92);--border-glass: rgba(255, 255, 255, .08);--text-primary: #f8fafc;--text-secondary: #94a3b8;--text-muted: #64748b;--shadow-premium: 0 8px 32px 0 rgba(0, 0, 0, .5);font-family:var(--font-family);color:var(--text-primary)}.canvas-badge{position:fixed;bottom:24px;right:24px;z-index:999999;display:flex;align-items:center;gap:10px;background:var(--bg-glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--border-glass);padding:12px 18px;border-radius:9999px;cursor:pointer;box-shadow:var(--shadow-premium),0 0 0 1px #6366f11a;transition:all .3s cubic-bezier(.16,1,.3,1);-webkit-user-select:none;user-select:none}.canvas-badge:hover{transform:translateY(-2px);background:var(--bg-glass-hover);border-color:#6366f14d;box-shadow:var(--shadow-premium),0 0 15px 3px #6366f133}.canvas-badge:active{transform:translateY(0)}.canvas-badge .badge-icon{width:18px;height:18px;border-radius:50%;background:conic-gradient(from 0deg,var(--primary-color),var(--accent-color),var(--primary-color));animation:rotate-gradient 3s linear infinite;position:relative;display:flex;align-items:center;justify-content:center}.canvas-badge .badge-icon:after{content:"";position:absolute;width:8px;height:8px;background:#0f172a;border-radius:50%}.canvas-badge .badge-text{font-size:14px;font-weight:600;letter-spacing:.5px}.canvas-badge.active{border-color:var(--accent-color);box-shadow:var(--shadow-premium),0 0 20px 5px var(--accent-glow)}.canvas-badge.active .badge-icon{box-shadow:0 0 8px var(--accent-color)}.canvas-overlay{position:fixed;pointer-events:none;z-index:999990;display:none;box-sizing:border-box;transition:top .08s ease,left .08s ease,width .08s ease,height .08s ease,border-radius .08s ease}.canvas-hover-overlay{border:1.5px dashed var(--primary-color);background:#6366f108;box-shadow:0 0 8px #6366f126}.canvas-selection-overlay{border:2px solid var(--accent-color);background:#06b6d403;box-shadow:0 0 15px #06b6d433;pointer-events:auto}.overlay-label{position:absolute;top:-24px;left:0;background:var(--primary-color);color:#fff;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px #0000004d;pointer-events:none;font-family:var(--font-family)}.canvas-selection-overlay .overlay-label{background:var(--accent-color)}.dimension-label{position:absolute;bottom:-24px;right:0;background:#0f172ae6;color:var(--text-secondary);border:1px solid var(--border-glass);font-size:10px;font-weight:500;padding:2px 6px;border-radius:4px;white-space:nowrap;pointer-events:none}.resize-handle{position:absolute;width:10px;height:10px;background:var(--text-primary);border:2px solid var(--accent-color);border-radius:50%;z-index:100}.resize-handle.tl{top:-6px;left:-6px;cursor:nwse-resize}.resize-handle.tr{top:-6px;right:-6px;cursor:nesw-resize}.resize-handle.bl{bottom:-6px;left:-6px;cursor:nesw-resize}.resize-handle.br{bottom:-6px;right:-6px;cursor:nwse-resize}.resize-handle.t{top:-6px;left:calc(50% - 5px);cursor:ns-resize;width:12px;height:6px;border-radius:3px}.resize-handle.b{bottom:-6px;left:calc(50% - 5px);cursor:ns-resize;width:12px;height:6px;border-radius:3px}.resize-handle.l{left:-6px;top:calc(50% - 5px);cursor:ew-resize;height:12px;width:6px;border-radius:3px}.resize-handle.r{right:-6px;top:calc(50% - 5px);cursor:ew-resize;height:12px;width:6px;border-radius:3px}.drag-handle{position:absolute;top:0;left:0;width:100%;height:100%;cursor:move;z-index:99}.canvas-inspector{position:fixed;top:20px;width:360px;height:calc(100vh - 40px);background:var(--bg-glass);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);border:1px solid var(--border-glass);border-radius:16px;box-shadow:var(--shadow-premium);z-index:999998;display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box;transition:transform .4s cubic-bezier(.16,1,.3,1),opacity .3s}.canvas-inspector.dock-right{right:20px;left:auto;transform:translate(420px)}.canvas-inspector.dock-right.open{transform:translate(0)}.canvas-inspector.dock-left{left:20px;right:auto;transform:translate(-420px)}.canvas-inspector.dock-left.open{transform:translate(0)}.inspector-header{padding:18px 20px;border-bottom:1px solid var(--border-glass);display:flex;justify-content:space-between;align-items:center;box-sizing:border-box}.inspector-title{margin:0;font-size:16px;font-weight:700;letter-spacing:-.5px;background:linear-gradient(to right,var(--text-primary),var(--text-secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.inspector-action-btn{background:transparent;border:none;color:var(--text-secondary);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;transition:all .2s}.inspector-action-btn:hover{background:#ffffff0d;color:var(--text-primary)}.inspector-close{background:transparent;border:none;color:var(--text-secondary);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;transition:all .2s}.inspector-close:hover{background:#ffffff0d;color:var(--text-primary)}.inspector-content{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 20px;display:flex;flex-direction:column;gap:16px;box-sizing:border-box}.inspector-section{display:flex;flex-direction:column;border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:14px}.inspector-section:last-child{border-bottom:none;padding-bottom:0}.section-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;-webkit-user-select:none;user-select:none;padding:6px 0}.section-header:hover .section-title{color:var(--text-primary)}.section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);transition:color .2s;margin:0}.section-chevron{font-size:10px;color:var(--text-muted);transition:transform .3s cubic-bezier(.16,1,.3,1)}.inspector-section.collapsed .section-chevron{transform:rotate(-90deg)}.section-body{display:flex;flex-direction:column;gap:12px;margin-top:10px;max-height:1200px;opacity:1;overflow:hidden;box-sizing:border-box;transition:max-height .4s cubic-bezier(.16,1,.3,1),opacity .25s,margin-top .3s}.inspector-section.collapsed .section-body{max-height:0;opacity:0;margin-top:0;pointer-events:none}.control-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%;box-sizing:border-box}.control-row{display:flex;flex-direction:column;gap:6px;box-sizing:border-box}.control-row.full-width{grid-column:span 2}.control-label{font-size:11px;font-weight:600;color:var(--text-secondary);display:flex;align-items:center}.info-icon{font-size:9px;color:var(--text-muted);cursor:help;margin-left:6px;display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;border:1px solid rgba(255,255,255,.15);font-style:normal;line-height:1;transition:all .2s;-webkit-user-select:none;user-select:none}.info-icon:hover{color:var(--accent-color);border-color:var(--accent-color);background:#06b6d40f;box-shadow:0 0 4px var(--accent-glow)}.canvas-tooltip{position:fixed;background:#0f172af2;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 14px;font-size:11.5px;line-height:1.45;color:#e2e8f0;box-shadow:var(--shadow-premium),0 0 0 1px #ffffff0d;z-index:1000002;pointer-events:none;max-width:250px;opacity:0;transform:translateY(5px);transition:opacity .2s ease,transform .2s ease;font-family:var(--font-family);box-sizing:border-box}.canvas-tooltip.show{opacity:1;transform:translateY(0)}.tooltip-example{display:block;margin-top:6px;padding:4px 6px;background:#00000059;border-radius:4px;font-family:monospace;font-size:10px;color:var(--accent-color);border-left:2px solid var(--accent-color)}.control-input,.control-select{background:#ffffff0a;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:8px 10px;font-family:var(--font-family);font-size:12.5px;color:var(--text-primary);outline:none;transition:all .2s;box-sizing:border-box;width:100%}.control-input:focus,.control-select:focus{border-color:var(--primary-color);box-shadow:0 0 0 2px var(--primary-glow);background:#ffffff12}textarea.control-input{resize:vertical;min-height:50px;width:100%;box-sizing:border-box}.color-picker-row{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box}.color-preview-box{width:32px;height:32px;border-radius:6px;border:1.5px solid rgba(255,255,255,.1);cursor:pointer;position:relative;overflow:hidden;flex-shrink:0}.color-native-input{position:absolute;top:-10px;left:-10px;width:60px;height:60px;cursor:pointer;opacity:0}.color-text-input{flex:1;min-width:0}.align-buttons{display:flex;gap:5px;width:100%}.align-btn{flex:1;background:#ffffff0a;border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:8px 4px;color:var(--text-secondary);font-size:12px;cursor:pointer;transition:all .2s}.align-btn:hover{background:#ffffff14;color:var(--text-primary)}.align-btn.active{background:var(--primary-color);border-color:var(--primary-color);color:#fff}.flex-control-row{display:flex;flex-direction:column;gap:8px;box-sizing:border-box;width:100%}.inspector-footer{padding:16px 20px;border-top:1px solid var(--border-glass);display:flex;flex-direction:column;gap:10px;box-sizing:border-box;width:100%;flex-shrink:0}.btn-row{display:flex;gap:10px;width:100%;box-sizing:border-box}.btn{flex:1;padding:10px 14px;font-family:var(--font-family);font-size:13px;font-weight:600;border-radius:8px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;border:none;box-sizing:border-box}.btn-primary{background:var(--primary-color);color:#fff}.btn-primary:hover{background:#4f46e5;box-shadow:0 0 10px #6366f166}.btn-secondary{background:#ffffff0f;color:var(--text-primary);border:1px solid var(--border-glass)}.btn-secondary:hover{background:#ffffff1a}.btn-danger{background:transparent;color:var(--danger-color);border:1px solid rgba(239,68,68,.2);width:100%;margin-top:2px}.btn-danger:hover{background:#ef44441a}.canvas-modal-overlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:#0f172a99;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);z-index:1000000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s ease}.canvas-modal-overlay.open{opacity:1;pointer-events:auto}.canvas-modal{background:var(--bg-glass);border:1px solid var(--border-glass);border-radius:16px;box-shadow:var(--shadow-premium);width:90%;max-width:500px;overflow:hidden;transform:scale(.95);transition:transform .3s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column}.canvas-modal-overlay.open .canvas-modal{transform:scale(1)}.modal-header{padding:18px 24px;border-bottom:1px solid var(--border-glass);display:flex;justify-content:space-between;align-items:center}.modal-title{margin:0;font-size:16px;font-weight:700}.modal-body{padding:24px;display:flex;flex-direction:column;gap:16px}.modal-desc{font-size:13px;color:var(--text-secondary);line-height:1.5}.code-container{background:#0000004d;border:1px solid var(--border-glass);border-radius:8px;padding:12px;font-family:monospace;font-size:12px;color:var(--accent-color);max-height:200px;overflow-y:auto;white-space:pre-wrap;-webkit-user-select:all;user-select:all}.modal-footer{padding:18px 24px;border-top:1px solid var(--border-glass);display:flex;justify-content:flex-end;gap:10px}.canvas-toast-container{position:fixed;bottom:24px;left:24px;z-index:1000001;display:flex;flex-direction:column;gap:10px}.canvas-toast{background:var(--bg-glass);border:1px solid var(--border-glass);border-radius:8px;padding:12px 20px;font-size:13px;font-weight:600;box-shadow:var(--shadow-premium);display:flex;align-items:center;gap:10px;transform:translateY(20px);opacity:0;animation:slide-in .3s forwards cubic-bezier(.16,1,.3,1)}.canvas-toast.toast-success{border-left:3px solid var(--success-color)}.canvas-toast.toast-danger{border-left:3px solid var(--danger-color)}.canvas-toast.toast-info{border-left:3px solid var(--primary-color)}@keyframes rotate-gradient{0%{transform:rotate(0)}to{transform:rotate(360deg)}}@keyframes slide-in{to{transform:translateY(0);opacity:1}}';
-class L {
+const T = '::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#ffffff0d}::-webkit-scrollbar-thumb{background:#fff3;border-radius:4px}::-webkit-scrollbar-thumb:hover{background:#fff6}:host{--primary-color: #6366f1;--primary-glow: rgba(99, 102, 241, .5);--accent-color: #06b6d4;--accent-glow: rgba(6, 182, 212, .5);--danger-color: #ef4444;--success-color: #10b981;--font-family: "Outfit", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;--bg-glass: rgba(15, 23, 42, .85);--bg-glass-hover: rgba(15, 23, 42, .92);--border-glass: rgba(255, 255, 255, .08);--text-primary: #f8fafc;--text-secondary: #94a3b8;--text-muted: #64748b;--shadow-premium: 0 8px 32px 0 rgba(0, 0, 0, .5);font-family:var(--font-family);color:var(--text-primary)}.canvas-badge{position:fixed;bottom:24px;right:24px;z-index:999999;display:flex;align-items:center;gap:10px;background:var(--bg-glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--border-glass);padding:12px 18px;border-radius:9999px;cursor:pointer;box-shadow:var(--shadow-premium),0 0 0 1px #6366f11a;transition:all .3s cubic-bezier(.16,1,.3,1);-webkit-user-select:none;user-select:none}.canvas-badge:hover{transform:translateY(-2px);background:var(--bg-glass-hover);border-color:#6366f14d;box-shadow:var(--shadow-premium),0 0 15px 3px #6366f133}.canvas-badge:active{transform:translateY(0)}.canvas-badge .badge-icon{width:18px;height:18px;border-radius:50%;background:conic-gradient(from 0deg,var(--primary-color),var(--accent-color),var(--primary-color));animation:rotate-gradient 3s linear infinite;position:relative;display:flex;align-items:center;justify-content:center}.canvas-badge .badge-icon:after{content:"";position:absolute;width:8px;height:8px;background:#0f172a;border-radius:50%}.canvas-badge .badge-text{font-size:14px;font-weight:600;letter-spacing:.5px}.canvas-badge.active{border-color:var(--accent-color);box-shadow:var(--shadow-premium),0 0 20px 5px var(--accent-glow)}.canvas-badge.active .badge-icon{box-shadow:0 0 8px var(--accent-color)}.canvas-overlay{position:fixed;pointer-events:none;z-index:999990;display:none;box-sizing:border-box;transition:top .08s ease,left .08s ease,width .08s ease,height .08s ease,border-radius .08s ease,opacity .2s ease}.canvas-hover-overlay{border:1.5px dashed var(--primary-color);background:#6366f108;box-shadow:0 0 8px #6366f126}.canvas-selection-overlay{border:2px solid var(--accent-color);background:#06b6d403;box-shadow:0 0 15px #06b6d440;pointer-events:auto}.canvas-inspector-hovered .canvas-selection-overlay{opacity:.15}.canvas-inspector-hovered .canvas-hover-overlay{opacity:0}.overlay-label{position:absolute;top:-24px;left:0;background:var(--primary-color);color:#fff;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px #0000004d;pointer-events:none;font-family:var(--font-family)}.canvas-selection-overlay .overlay-label{background:var(--accent-color)}.dimension-label{position:absolute;bottom:-24px;right:0;background:#0f172ae6;color:var(--text-secondary);border:1px solid var(--border-glass);font-size:10px;font-weight:500;padding:2px 6px;border-radius:4px;white-space:nowrap;pointer-events:none}.resize-handle{position:absolute;width:10px;height:10px;background:var(--text-primary);border:2px solid var(--accent-color);border-radius:50%;z-index:100}.resize-handle.tl{top:-6px;left:-6px;cursor:nwse-resize}.resize-handle.tr{top:-6px;right:-6px;cursor:nesw-resize}.resize-handle.bl{bottom:-6px;left:-6px;cursor:nesw-resize}.resize-handle.br{bottom:-6px;right:-6px;cursor:nwse-resize}.resize-handle.t{top:-6px;left:calc(50% - 5px);cursor:ns-resize;width:12px;height:6px;border-radius:3px}.resize-handle.b{bottom:-6px;left:calc(50% - 5px);cursor:ns-resize;width:12px;height:6px;border-radius:3px}.resize-handle.l{left:-6px;top:calc(50% - 5px);cursor:ew-resize;height:12px;width:6px;border-radius:3px}.resize-handle.r{right:-6px;top:calc(50% - 5px);cursor:ew-resize;height:12px;width:6px;border-radius:3px}.drag-handle{position:absolute;top:0;left:0;width:100%;height:100%;cursor:move;z-index:99}.canvas-inspector{position:fixed;top:20px;width:360px;height:calc(100vh - 40px);background:var(--bg-glass);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);border:1px solid var(--border-glass);border-radius:16px;box-shadow:var(--shadow-premium);z-index:999998;display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box;transition:transform .4s cubic-bezier(.16,1,.3,1),opacity .3s}.canvas-inspector.dock-right{right:20px;left:auto;transform:translate(420px)}.canvas-inspector.dock-right.open{transform:translate(0)}.canvas-inspector.dock-left{left:20px;right:auto;transform:translate(-420px)}.canvas-inspector.dock-left.open{transform:translate(0)}.inspector-header{padding:18px 20px;border-bottom:1px solid var(--border-glass);display:flex;justify-content:space-between;align-items:center;box-sizing:border-box}.inspector-title{margin:0;font-size:16px;font-weight:700;letter-spacing:-.5px;background:linear-gradient(to right,var(--text-primary),var(--text-secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.inspector-action-btn{background:transparent;border:none;color:var(--text-secondary);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;transition:all .2s}.inspector-action-btn:hover{background:#ffffff0d;color:var(--text-primary)}.inspector-close{background:transparent;border:none;color:var(--text-secondary);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;transition:all .2s}.inspector-close:hover{background:#ffffff0d;color:var(--text-primary)}.inspector-content{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 20px;display:flex;flex-direction:column;gap:16px;box-sizing:border-box}.inspector-section{display:flex;flex-direction:column;border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:14px}.inspector-section:last-child{border-bottom:none;padding-bottom:0}.section-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;-webkit-user-select:none;user-select:none;padding:6px 0}.section-header:hover .section-title{color:var(--text-primary)}.section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);transition:color .2s;margin:0}.section-chevron{font-size:10px;color:var(--text-muted);transition:transform .3s cubic-bezier(.16,1,.3,1)}.inspector-section.collapsed .section-chevron{transform:rotate(-90deg)}.section-body{display:flex;flex-direction:column;gap:12px;margin-top:10px;max-height:1200px;opacity:1;overflow:hidden;box-sizing:border-box;transition:max-height .4s cubic-bezier(.16,1,.3,1),opacity .25s,margin-top .3s}.inspector-section.collapsed .section-body{max-height:0;opacity:0;margin-top:0;pointer-events:none}.control-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%;box-sizing:border-box}.control-row{display:flex;flex-direction:column;gap:6px;box-sizing:border-box}.control-row.full-width{grid-column:span 2}.control-label{font-size:11px;font-weight:600;color:var(--text-secondary);display:flex;align-items:center}.info-icon{font-size:9px;color:var(--text-muted);cursor:help;margin-left:6px;display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;border:1px solid rgba(255,255,255,.15);font-style:normal;line-height:1;transition:all .2s;-webkit-user-select:none;user-select:none}.info-icon:hover{color:var(--accent-color);border-color:var(--accent-color);background:#06b6d40f;box-shadow:0 0 4px var(--accent-glow)}.canvas-tooltip{position:fixed;background:#0f172af2;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 14px;font-size:11.5px;line-height:1.45;color:#e2e8f0;box-shadow:var(--shadow-premium),0 0 0 1px #ffffff0d;z-index:1000002;pointer-events:none;max-width:250px;opacity:0;transform:translateY(5px);transition:opacity .2s ease,transform .2s ease;font-family:var(--font-family);box-sizing:border-box}.canvas-tooltip.show{opacity:1;transform:translateY(0)}.tooltip-example{display:block;margin-top:6px;padding:4px 6px;background:#00000059;border-radius:4px;font-family:monospace;font-size:10px;color:var(--accent-color);border-left:2px solid var(--accent-color)}.control-input,.control-select{background:#ffffff0a;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:8px 10px;font-family:var(--font-family);font-size:12.5px;color:var(--text-primary);outline:none;transition:all .2s;box-sizing:border-box;width:100%}.control-select option{background-color:#0f172a;color:var(--text-primary)}.control-input:focus,.control-select:focus{border-color:var(--primary-color);box-shadow:0 0 0 2px var(--primary-glow);background:#ffffff12}textarea.control-input{resize:vertical;min-height:50px;width:100%;box-sizing:border-box}.color-picker-row{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box}.color-preview-box{width:32px;height:32px;border-radius:6px;border:1.5px solid rgba(255,255,255,.1);cursor:pointer;position:relative;overflow:hidden;flex-shrink:0}.color-native-input{position:absolute;top:-10px;left:-10px;width:60px;height:60px;cursor:pointer;opacity:0}.color-text-input{flex:1;min-width:0}.align-buttons{display:flex;gap:5px;width:100%}.align-btn{flex:1;background:#ffffff0a;border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:8px 4px;color:var(--text-secondary);font-size:12px;cursor:pointer;transition:all .2s}.align-btn:hover{background:#ffffff14;color:var(--text-primary)}.align-btn.active{background:var(--primary-color);border-color:var(--primary-color);color:#fff}.flex-control-row{display:flex;flex-direction:column;gap:8px;box-sizing:border-box;width:100%}.inspector-footer{padding:16px 20px;border-top:1px solid var(--border-glass);display:flex;flex-direction:column;gap:10px;box-sizing:border-box;width:100%;flex-shrink:0}.btn-row{display:flex;gap:10px;width:100%;box-sizing:border-box}.btn{flex:1;padding:10px 14px;font-family:var(--font-family);font-size:13px;font-weight:600;border-radius:8px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;border:none;box-sizing:border-box}.btn-primary{background:var(--primary-color);color:#fff}.btn-primary:hover{background:#4f46e5;box-shadow:0 0 10px #6366f166}.btn-secondary{background:#ffffff0f;color:var(--text-primary);border:1px solid var(--border-glass)}.btn-secondary:hover{background:#ffffff1a}.btn-danger{background:transparent;color:var(--danger-color);border:1px solid rgba(239,68,68,.2);width:100%;margin-top:2px}.btn-danger:hover{background:#ef44441a}.canvas-modal-overlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:#0f172a99;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);z-index:1000000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s ease}.canvas-modal-overlay.open{opacity:1;pointer-events:auto}.canvas-modal{background:var(--bg-glass);border:1px solid var(--border-glass);border-radius:16px;box-shadow:var(--shadow-premium);width:90%;max-width:500px;overflow:hidden;transform:scale(.95);transition:transform .3s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column}.canvas-modal-overlay.open .canvas-modal{transform:scale(1)}.modal-header{padding:18px 24px;border-bottom:1px solid var(--border-glass);display:flex;justify-content:space-between;align-items:center}.modal-title{margin:0;font-size:16px;font-weight:700}.modal-body{padding:24px;display:flex;flex-direction:column;gap:16px}.modal-desc{font-size:13px;color:var(--text-secondary);line-height:1.5}.code-container{background:#0000004d;border:1px solid var(--border-glass);border-radius:8px;padding:12px;font-family:monospace;font-size:12px;color:var(--accent-color);max-height:200px;overflow-y:auto;white-space:pre-wrap;-webkit-user-select:all;user-select:all}.modal-footer{padding:18px 24px;border-top:1px solid var(--border-glass);display:flex;justify-content:flex-end;gap:10px}.canvas-toast-container{position:fixed;bottom:24px;left:24px;z-index:1000001;display:flex;flex-direction:column;gap:10px}.canvas-toast{background:var(--bg-glass);border:1px solid var(--border-glass);border-radius:8px;padding:12px 20px;font-size:13px;font-weight:600;box-shadow:var(--shadow-premium);display:flex;align-items:center;gap:10px;transform:translateY(20px);opacity:0;animation:slide-in .3s forwards cubic-bezier(.16,1,.3,1)}.canvas-toast.toast-success{border-left:3px solid var(--success-color)}.canvas-toast.toast-danger{border-left:3px solid var(--danger-color)}.canvas-toast.toast-info{border-left:3px solid var(--primary-color)}@keyframes rotate-gradient{0%{transform:rotate(0)}to{transform:rotate(360deg)}}@keyframes slide-in{to{transform:translateY(0);opacity:1}}';
+class I {
   constructor(e = {}) {
     this.callbacks = e, this.root = null, this.shadowRoot = null, this.badge = null, this.hoverOverlay = null, this.selectionOverlay = null, this.inspector = null, this.modalOverlay = null, this.toastContainer = null, this.tooltip = null, this.inputs = {}, this.init();
   }
   init() {
     this.root = document.createElement("div"), this.root.id = "canvas-editor-root", document.body.appendChild(this.root), this.shadowRoot = this.root.attachShadow({ mode: "open" });
     const e = document.createElement("style");
-    e.textContent = S, this.shadowRoot.appendChild(e);
-    const t = document.createElement("div");
-    t.innerHTML = this.getHTMLTemplate(), this.shadowRoot.appendChild(t), this.badge = this.shadowRoot.querySelector(".canvas-badge"), this.hoverOverlay = this.shadowRoot.querySelector(".canvas-hover-overlay"), this.selectionOverlay = this.shadowRoot.querySelector(".canvas-selection-overlay"), this.inspector = this.shadowRoot.querySelector(".canvas-inspector"), this.modalOverlay = this.shadowRoot.querySelector(".canvas-modal-overlay"), this.toastContainer = this.shadowRoot.querySelector(".canvas-toast-container");
-    const o = localStorage.getItem("canvas_inspector_dock") || "dock-right";
-    this.inspector.classList.add(o), this.tooltip = document.createElement("div"), this.tooltip.className = "canvas-tooltip", this.shadowRoot.appendChild(this.tooltip), this.cacheInputs(), this.bindEvents();
+    e.textContent = T, this.shadowRoot.appendChild(e), this.uiContainer = document.createElement("div"), this.uiContainer.innerHTML = this.getHTMLTemplate(), this.shadowRoot.appendChild(this.uiContainer), this.badge = this.shadowRoot.querySelector(".canvas-badge"), this.hoverOverlay = this.shadowRoot.querySelector(".canvas-hover-overlay"), this.selectionOverlay = this.shadowRoot.querySelector(".canvas-selection-overlay"), this.inspector = this.shadowRoot.querySelector(".canvas-inspector"), this.modalOverlay = this.shadowRoot.querySelector(".canvas-modal-overlay"), this.toastContainer = this.shadowRoot.querySelector(".canvas-toast-container");
+    const t = localStorage.getItem("canvas_inspector_dock") || "dock-right";
+    this.inspector.classList.add(t), this.tooltip = document.createElement("div"), this.tooltip.className = "canvas-tooltip", this.shadowRoot.appendChild(this.tooltip), this.cacheInputs(), this.bindEvents();
   }
   getHTMLTemplate() {
     return `
@@ -193,6 +191,25 @@ class L {
                 </div>
                 <div class="control-row">
                   <!-- Empty cell to balance grid -->
+                </div>
+
+                <div class="control-row full-width">
+                  <label class="control-label">
+                    Font Family
+                    <span class="info-icon" data-tip="Sets font type. Example: Inter, Georgia, sans-serif." data-example="Montserrat">ⓘ</span>
+                  </label>
+                  <input type="text" class="control-input" data-style="fontFamily" placeholder="Inherited / e.g. Inter">
+                </div>
+
+                <div class="control-row full-width">
+                  <label class="control-label">
+                    Load Custom Font
+                    <span class="info-icon" data-tip="Type a Google Font name or paste stylesheet URL to load it dynamically." data-example="Montserrat">ⓘ</span>
+                  </label>
+                  <div style="display: flex; gap: 8px; width: 100%; box-sizing: border-box;">
+                    <input type="text" class="control-input" id="canvas-font-import-url" placeholder="e.g. Montserrat or Google CSS Link" style="flex: 1; min-width: 0;">
+                    <button class="btn btn-secondary" id="canvas-font-import-btn" style="padding: 0 12px; font-size: 11px; flex-shrink: 0; width: auto; height: 34px; margin: 0; border-radius: 8px;">Load</button>
+                  </div>
                 </div>
 
                 <div class="control-row full-width">
@@ -424,9 +441,9 @@ class L {
       this.callbacks.onToggleActive && this.callbacks.onToggleActive();
     }), this.shadowRoot.getElementById("inspector-dock-btn").addEventListener("click", () => {
       this.inspector.classList.contains("dock-right") ? (this.inspector.classList.remove("dock-right"), this.inspector.classList.add("dock-left"), localStorage.setItem("canvas_inspector_dock", "dock-left")) : (this.inspector.classList.remove("dock-left"), this.inspector.classList.add("dock-right"), localStorage.setItem("canvas_inspector_dock", "dock-right")), this.showToast("Sidebar docked " + (this.inspector.classList.contains("dock-right") ? "right" : "left"), "info");
-    }), this.shadowRoot.querySelectorAll(".section-header").forEach((s) => {
-      s.addEventListener("click", () => {
-        s.parentElement.classList.toggle("collapsed");
+    }), this.shadowRoot.querySelectorAll(".section-header").forEach((n) => {
+      n.addEventListener("click", () => {
+        n.parentElement.classList.toggle("collapsed");
       });
     }), this.shadowRoot.getElementById("inspector-close-btn").addEventListener("click", () => {
       this.closeInspector();
@@ -436,45 +453,56 @@ class L {
       this.callbacks.onCancel && this.callbacks.onCancel();
     }), this.shadowRoot.getElementById("inspector-reset-btn").addEventListener("click", () => {
       confirm("Are you sure you want to clear ALL visual edits you made to this page?") && this.callbacks.onReset && this.callbacks.onReset();
+    }), this.inspector.addEventListener("mouseenter", () => {
+      this.uiContainer.classList.add("canvas-inspector-hovered");
+    }), this.inspector.addEventListener("mouseleave", () => {
+      this.uiContainer.classList.remove("canvas-inspector-hovered");
     });
-    const t = () => this.modalOverlay.classList.remove("open");
-    this.shadowRoot.getElementById("modal-close-btn").addEventListener("click", t), this.shadowRoot.getElementById("modal-ok-btn").addEventListener("click", t), this.shadowRoot.addEventListener("input", (s) => {
-      const a = s.target;
-      if (a.dataset.style) {
-        const n = a.dataset.style;
-        let l = a.value;
-        if (a.type === "number" && l !== "" && n !== "opacity" && n !== "zIndex" && (l = `${l}px`), a.type === "color") {
-          const r = this.shadowRoot.querySelector(`[data-style-sync="${n}"]`);
-          r && (r.value = l), a.parentElement.style.backgroundColor = l;
+    const t = this.shadowRoot.getElementById("canvas-font-import-btn"), o = this.shadowRoot.getElementById("canvas-font-import-url");
+    t.addEventListener("click", () => {
+      const n = o.value.trim();
+      n && this.callbacks.onFontImport && this.callbacks.onFontImport(n);
+    }), o.addEventListener("keydown", (n) => {
+      n.key === "Enter" && (n.preventDefault(), t.click());
+    });
+    const s = () => this.modalOverlay.classList.remove("open");
+    this.shadowRoot.getElementById("modal-close-btn").addEventListener("click", s), this.shadowRoot.getElementById("modal-ok-btn").addEventListener("click", s), this.shadowRoot.addEventListener("input", (n) => {
+      const l = n.target;
+      if (l.dataset.style) {
+        const r = l.dataset.style;
+        let c = l.value;
+        if (l.type === "number" && c !== "" && r !== "opacity" && r !== "zIndex" && (c = `${c}px`), l.type === "color") {
+          const d = this.shadowRoot.querySelector(`[data-style-sync="${r}"]`);
+          d && (d.value = c), l.parentElement.style.backgroundColor = c;
         }
-        this.triggerStyleChange(n, l);
+        this.triggerStyleChange(r, c);
       }
-      if (a.dataset.styleSync) {
-        const n = a.dataset.styleSync, l = a.value, r = this.shadowRoot.querySelector(`input[type="color"][data-style="${n}"]`);
-        if (r) {
-          const d = z(l);
-          r.value = d, r.parentElement.style.backgroundColor = l;
+      if (l.dataset.styleSync) {
+        const r = l.dataset.styleSync, c = l.value, d = this.shadowRoot.querySelector(`input[type="color"][data-style="${r}"]`);
+        if (d) {
+          const p = M(c);
+          d.value = p, d.parentElement.style.backgroundColor = c;
         }
-        this.triggerStyleChange(n, l);
+        this.triggerStyleChange(r, c);
       }
-    }), this.shadowRoot.getElementById("inspector-text-content").addEventListener("input", (s) => {
-      this.callbacks.onTextChange && this.callbacks.onTextChange(s.target.value);
-    }), this.shadowRoot.querySelectorAll(".align-btn").forEach((s) => {
-      s.addEventListener("click", (a) => {
-        const n = a.currentTarget, l = n.dataset.style, r = n.dataset.val;
-        n.parentElement.querySelectorAll(".align-btn").forEach((d) => d.classList.remove("active")), n.classList.add("active"), this.triggerStyleChange(l, r);
+    }), this.shadowRoot.getElementById("inspector-text-content").addEventListener("input", (n) => {
+      this.callbacks.onTextChange && this.callbacks.onTextChange(n.target.value);
+    }), this.shadowRoot.querySelectorAll(".align-btn").forEach((n) => {
+      n.addEventListener("click", (l) => {
+        const r = l.currentTarget, c = r.dataset.style, d = r.dataset.val;
+        r.parentElement.querySelectorAll(".align-btn").forEach((p) => p.classList.remove("active")), r.classList.add("active"), this.triggerStyleChange(c, d);
       });
-    }), this.shadowRoot.querySelectorAll(".info-icon").forEach((s) => {
-      const a = () => {
-        const l = s.dataset.tip, r = s.dataset.example;
-        let d = l;
-        r && (d += `<span class="tooltip-example">Example: ${r}</span>`), this.tooltip.innerHTML = d, this.tooltip.classList.add("show");
-        const c = s.getBoundingClientRect(), p = this.tooltip.getBoundingClientRect(), x = c.top - p.height - 8, E = c.left + c.width / 2 - p.width / 2, C = Math.max(10, Math.min(window.innerWidth - p.width - 10, E)), k = x < 10 ? c.bottom + 8 : x;
-        this.tooltip.style.top = `${k}px`, this.tooltip.style.left = `${C}px`;
-      }, n = () => {
+    }), this.shadowRoot.querySelectorAll(".info-icon").forEach((n) => {
+      const l = () => {
+        const c = n.dataset.tip, d = n.dataset.example;
+        let p = c;
+        d && (p += `<span class="tooltip-example">Example: ${d}</span>`), this.tooltip.innerHTML = p, this.tooltip.classList.add("show");
+        const v = n.getBoundingClientRect(), f = this.tooltip.getBoundingClientRect(), m = v.top - f.height - 8, L = v.left + v.width / 2 - f.width / 2, z = Math.max(10, Math.min(window.innerWidth - f.width - 10, L)), R = m < 10 ? v.bottom + 8 : m;
+        this.tooltip.style.top = `${R}px`, this.tooltip.style.left = `${z}px`;
+      }, r = () => {
         this.tooltip.classList.remove("show");
       };
-      s.addEventListener("mouseenter", a), s.addEventListener("mouseleave", n), s.addEventListener("focus", a), s.addEventListener("blur", n);
+      n.addEventListener("mouseenter", l), n.addEventListener("mouseleave", r), n.addEventListener("focus", l), n.addEventListener("blur", r);
     });
   }
   triggerStyleChange(e, t) {
@@ -515,18 +543,18 @@ class L {
       t.type === "color" ? (t.value = "#000000", t.parentElement.style.backgroundColor = "transparent") : (t.tagName, t.value = "");
     }), this.shadowRoot.querySelectorAll("[data-style-sync]").forEach((t) => t.value = ""), this.shadowRoot.querySelectorAll(".align-btn").forEach((t) => t.classList.remove("active")), Object.entries(e).forEach(([t, o]) => {
       const s = this.inputs[t];
-      if (s && (s.forEach((a) => {
-        if (a.type === "number")
-          a.value = parseFloat(o) || "";
-        else if (a.type === "color") {
-          const n = y(o) || "#000000";
-          a.value = n, a.parentElement.style.backgroundColor = o;
+      if (s && (s.forEach((i) => {
+        if (i.type === "number")
+          i.value = parseFloat(o) || "";
+        else if (i.type === "color") {
+          const n = E(o) || "#000000";
+          i.value = n, i.parentElement.style.backgroundColor = o;
           const l = this.shadowRoot.querySelector(`[data-style-sync="${t}"]`);
           l && (l.value = o);
-        } else a.tagName === "SELECT" ? a.value = o : a.classList.contains("align-btn") ? a.dataset.val === o && a.classList.add("active") : a.value = o;
+        } else i.tagName === "SELECT" ? i.value = o : i.classList.contains("align-btn") ? i.dataset.val === o && i.classList.add("active") : i.value = o;
       }), t === "textAlign")) {
-        const a = this.shadowRoot.querySelector(`.align-btn[data-val="${o}"]`);
-        a && a.classList.add("active");
+        const i = this.shadowRoot.querySelector(`.align-btn[data-val="${o}"]`);
+        i && i.classList.add("active");
       }
     });
   }
@@ -543,29 +571,29 @@ class L {
     }, 10);
   }
 }
-function y(i) {
-  if (!i) return null;
-  if (i.startsWith("#")) return i;
-  if (i === "transparent") return "#ffffff";
-  const e = i.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/);
+function E(a) {
+  if (!a) return null;
+  if (a.startsWith("#")) return a;
+  if (a === "transparent") return "#ffffff";
+  const e = a.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/);
   if (!e) return null;
   if ((e[4] !== void 0 ? parseFloat(e[4]) : 1) === 0) return "#ffffff";
-  const o = parseInt(e[1]).toString(16).padStart(2, "0"), s = parseInt(e[2]).toString(16).padStart(2, "0"), a = parseInt(e[3]).toString(16).padStart(2, "0");
-  return `#${o}${s}${a}`;
+  const o = parseInt(e[1]).toString(16).padStart(2, "0"), s = parseInt(e[2]).toString(16).padStart(2, "0"), i = parseInt(e[3]).toString(16).padStart(2, "0");
+  return `#${o}${s}${i}`;
 }
-function z(i) {
-  if (!i || i === "transparent") return "#ffffff";
+function M(a) {
+  if (!a || a === "transparent") return "#ffffff";
   const e = document.createElement("div");
-  e.style.color = i, document.body.appendChild(e);
+  e.style.color = a, document.body.appendChild(e);
   const t = window.getComputedStyle(e).color;
-  return document.body.removeChild(e), y(t) || "#ffffff";
+  return document.body.removeChild(e), E(t) || "#ffffff";
 }
-function R(i) {
-  if (!(i instanceof Element)) return "";
-  if (i.id)
-    return `#${CSS.escape(i.id)}`;
+function O(a) {
+  if (!(a instanceof Element)) return "";
+  if (a.id)
+    return `#${CSS.escape(a.id)}`;
   const e = [];
-  let t = i;
+  let t = a;
   for (; t && t.nodeType === Node.ELEMENT_NODE; ) {
     let o = t.nodeName.toLowerCase();
     if (o === "html" || o === "body") {
@@ -576,83 +604,96 @@ function R(i) {
       const l = Array.from(t.classList).map((r) => CSS.escape(r)).join(".");
       l && (o += "." + l);
     }
-    let s = t, a = 1;
+    let s = t, i = 1;
     for (; s = s.previousElementSibling; )
-      s.nodeName === t.nodeName && a++;
+      s.nodeName === t.nodeName && i++;
     let n = !1;
     for (s = t; s = s.nextElementSibling; )
       if (s.nodeName === t.nodeName) {
         n = !0;
         break;
       }
-    (a > 1 || n) && (o += `:nth-of-type(${a})`), e.unshift(o), t = t.parentNode;
+    (i > 1 || n) && (o += `:nth-of-type(${i})`), e.unshift(o), t = t.parentNode;
   }
   return e.join(" > ");
 }
-function T(i) {
-  return i.replace(/[A-Z]/g, (e) => `-${e.toLowerCase()}`);
+function D(a) {
+  return a.replace(/[A-Z]/g, (e) => `-${e.toLowerCase()}`);
 }
-const b = "canvas_saved_modifications", h = /* @__PURE__ */ new Map();
-function g() {
+const g = "canvas_saved_modifications", u = /* @__PURE__ */ new Map();
+function x() {
   return window.location.origin + window.location.pathname;
 }
-function f() {
+function y() {
   try {
-    const i = localStorage.getItem(b);
-    return i ? JSON.parse(i) : {};
-  } catch (i) {
-    return console.error("Canvas: Failed to parse saved modifications", i), {};
+    const a = localStorage.getItem(g);
+    return a ? JSON.parse(a) : {};
+  } catch (a) {
+    return console.error("Canvas: Failed to parse saved modifications", a), {};
   }
 }
-function v() {
-  return f()[g()] || {};
+function h() {
+  return y()[x()] || {};
 }
-function O(i) {
-  const e = f();
-  e[g()] = i, localStorage.setItem(b, JSON.stringify(e));
+function w(a) {
+  const e = y();
+  e[x()] = a, localStorage.setItem(g, JSON.stringify(e));
 }
-function m(i, e = !1) {
-  Object.entries(i).forEach(([t, o]) => {
+function C(a) {
+  if (!a || (!a.startsWith("http") && !a.startsWith("//") && (a = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(a.trim())}:wght@300;400;500;600;700;900&display=swap`), document.querySelector(`link[href="${a}"]`))) return;
+  const e = document.createElement("link");
+  e.rel = "stylesheet", e.href = a, document.head.appendChild(e);
+}
+function k(a, e = !1) {
+  Object.entries(a).forEach(([t, o]) => {
+    if (t === "__fontImports") return;
     const s = document.querySelector(t);
     if (s) {
-      if (!h.has(t)) {
-        const a = {};
+      if (!u.has(t)) {
+        const i = {};
         o.styles && Object.keys(o.styles).forEach((n) => {
-          a[n] = s.style[n] || "";
-        }), h.set(t, {
-          styles: a,
+          i[n] = s.style[n] || "";
+        }), u.set(t, {
+          styles: i,
           text: s.innerHTML,
           // Store innerHTML to preserve structure/child elements if any
           display: s.style.display || ""
         });
       }
-      o.styles && Object.entries(o.styles).forEach(([a, n]) => {
-        s.style[a] = n;
+      o.styles && Object.entries(o.styles).forEach(([i, n]) => {
+        s.style[i] = n;
       }), o.text !== void 0 && o.text !== null && (s.children.length === 0 ? s.textContent = o.text : s.innerHTML = o.text);
     }
   });
 }
-function w(i) {
-  Object.keys(i).forEach((e) => {
-    const t = document.querySelector(e), o = h.get(e);
-    t && o && (o.styles && Object.entries(o.styles).forEach(([s, a]) => {
-      t.style[s] = a;
-    }), o.text !== void 0 && (t.innerHTML = o.text)), h.delete(e);
+function S(a) {
+  Object.keys(a).forEach((e) => {
+    if (e === "__fontImports") return;
+    const t = document.querySelector(e), o = u.get(e);
+    t && o && (o.styles && Object.entries(o.styles).forEach(([s, i]) => {
+      t.style[s] = i;
+    }), o.text !== void 0 && (t.innerHTML = o.text)), u.delete(e);
   });
 }
-function M() {
-  const i = v();
-  m(i, !1);
+function $() {
+  const a = h();
+  a.__fontImports && Array.isArray(a.__fontImports) && a.__fontImports.forEach((e) => {
+    try {
+      C(e);
+    } catch (t) {
+      console.error("Canvas: Failed to inject font URL", e, t);
+    }
+  }), k(a, !1);
 }
-function I() {
-  const i = v();
-  w(i);
-  const e = f();
-  delete e[g()], localStorage.setItem(b, JSON.stringify(e));
+function B() {
+  const a = h();
+  S(a);
+  const e = y();
+  delete e[x()], localStorage.setItem(g, JSON.stringify(e));
 }
-class D {
+class A {
   constructor() {
-    this.active = !1, this.selectedElement = null, this.selectedSelector = "", this._originalOverflow = "", this.draftChanges = {}, this.handleMouseMove = this.handleMouseMove.bind(this), this.handleMouseClick = this.handleMouseClick.bind(this), this.handleDragStart = this.handleDragStart.bind(this), this.handleDragMove = this.handleDragMove.bind(this), this.handleDragEnd = this.handleDragEnd.bind(this), this.handleResizeStart = this.handleResizeStart.bind(this), this.handleResizeMove = this.handleResizeMove.bind(this), this.handleResizeEnd = this.handleResizeEnd.bind(this), this.handleDoubleClick = this.handleDoubleClick.bind(this), this.handleTextChange = this.handleTextChange.bind(this), this.dragState = {
+    this.active = !1, this.selectedElement = null, this.selectedSelector = "", this._originalOverflow = "", this.draftChanges = {}, this.handleMouseMove = this.handleMouseMove.bind(this), this.handleMouseClick = this.handleMouseClick.bind(this), this.handleDragStart = this.handleDragStart.bind(this), this.handleDragMove = this.handleDragMove.bind(this), this.handleDragEnd = this.handleDragEnd.bind(this), this.handleResizeStart = this.handleResizeStart.bind(this), this.handleResizeMove = this.handleResizeMove.bind(this), this.handleResizeEnd = this.handleResizeEnd.bind(this), this.handleDoubleClick = this.handleDoubleClick.bind(this), this.handleTextChange = this.handleTextChange.bind(this), this.handleFontImport = this.handleFontImport.bind(this), this.dragState = {
       isDragging: !1,
       startX: 0,
       startY: 0,
@@ -667,10 +708,11 @@ class D {
       startHeight: 0,
       startLeft: 0,
       startTop: 0
-    }, this.ui = new L({
+    }, this.ui = new I({
       onToggleActive: () => this.toggleActive(),
       onStyleChange: (e, t) => this.handleStyleChange(e, t),
       onTextChange: (e) => this.handleTextChange(e),
+      onFontImport: (e) => this.handleFontImport(e),
       onSave: () => this.saveChanges(),
       onCancel: () => this.cancelChanges(),
       onReset: () => this.resetAllChanges()
@@ -703,13 +745,13 @@ class D {
    */
   calculateOverlayRect(e) {
     const t = e.getBoundingClientRect(), o = window.getComputedStyle(e), s = 6;
-    let a = parseFloat(o.borderRadius) || 0;
+    let i = parseFloat(o.borderRadius) || 0;
     return {
       top: t.top - s,
       left: t.left - s,
       width: t.width + s * 2,
       height: t.height + s * 2,
-      borderRadius: `${a + s}px`,
+      borderRadius: `${i + s}px`,
       originalWidth: t.width,
       originalHeight: t.height
     };
@@ -724,10 +766,10 @@ class D {
   }
   selectElement(e) {
     if (this.selectedElement === e) return;
-    this.deselectElement(), this.selectedElement = e, this.selectedSelector = R(e), this._originalOverflow = document.documentElement.style.overflow, document.documentElement.style.overflow = "hidden";
+    this.deselectElement(), this.selectedElement = e, this.selectedSelector = O(e), this._originalOverflow = document.documentElement.style.overflow, document.documentElement.style.overflow = "hidden";
     const t = this.calculateOverlayRect(e), o = `${e.tagName.toLowerCase()}${e.id ? "#" + e.id : ""}`;
     this.ui.showSelection(t, o);
-    const s = window.getComputedStyle(e), a = {
+    const s = window.getComputedStyle(e), i = {
       marginTop: s.marginTop,
       marginRight: s.marginRight,
       marginBottom: s.marginBottom,
@@ -759,7 +801,7 @@ class D {
       opacity: s.opacity,
       boxShadow: e.style.boxShadow || ""
     }, n = e.children.length === 0 ? e.textContent.trim() : e.innerHTML.trim();
-    this.ui.openInspector(o, a, n);
+    this.ui.openInspector(o, i, n);
   }
   deselectElement() {
     this.selectedElement && (this.selectedElement.contentEditable === "true" && this.selectedElement.blur(), this._originalOverflow !== void 0 ? document.documentElement.style.overflow = this._originalOverflow : document.documentElement.style.overflow = "", this.selectedElement = null, this.selectedSelector = ""), this.ui.hideSelection(), this.ui.closeInspector();
@@ -779,39 +821,59 @@ class D {
     o.selectNodeContents(t), o.collapse(!1);
     const s = window.getSelection();
     s.removeAllRanges(), s.addRange(o), t.style.outline = "2px dashed var(--accent-color)";
-    const a = () => {
+    const i = () => {
       t.contentEditable = "false", t.style.outline = "";
       const l = t.innerHTML;
       this.recordTextChange(this.selectedSelector, l), this.repositionOverlays();
       const r = this.ui.shadowRoot.getElementById("inspector-text-content");
-      r && (r.value = t.children.length === 0 ? t.textContent.trim() : t.innerHTML.trim()), t.removeEventListener("blur", a), t.removeEventListener("keydown", n);
+      r && (r.value = t.children.length === 0 ? t.textContent.trim() : t.innerHTML.trim()), t.removeEventListener("blur", i), t.removeEventListener("keydown", n);
     }, n = (l) => {
-      var r, d;
+      var r, c;
       if (l.key === "Escape") {
-        const c = (r = this.draftChanges[this.selectedSelector]) == null ? void 0 : r.text;
-        if (c !== void 0)
-          t.innerHTML = c;
+        const d = (r = this.draftChanges[this.selectedSelector]) == null ? void 0 : r.text;
+        if (d !== void 0)
+          t.innerHTML = d;
         else {
-          const p = (d = v()[this.selectedSelector]) == null ? void 0 : d.text;
+          const p = (c = h()[this.selectedSelector]) == null ? void 0 : c.text;
           p !== void 0 && (t.innerHTML = p);
         }
         t.blur();
       } else l.key === "Enter" && !l.shiftKey && (l.preventDefault(), t.blur());
     };
-    t.addEventListener("blur", a), t.addEventListener("keydown", n);
+    t.addEventListener("blur", i), t.addEventListener("keydown", n);
   }
   recordTextChange(e, t) {
-    this.draftChanges[e] || (this.draftChanges[e] = { styles: {}, text: "" }), this.draftChanges[e].text = t, m(this.draftChanges, !0);
+    this.draftChanges[e] || (this.draftChanges[e] = { styles: {}, text: "" }), this.draftChanges[e].text = t, k(this.draftChanges, !0);
   }
   handleTextChange(e) {
     this.selectedElement && (this.selectedElement.children.length === 0 ? this.selectedElement.textContent = e : this.selectedElement.innerHTML = e, this.recordTextChange(this.selectedSelector, e), this.repositionOverlays());
+  }
+  handleFontImport(e) {
+    if (e)
+      try {
+        C(e);
+        let t = e.trim();
+        if (e.includes("family=")) {
+          const n = e.match(/family=([^&:]+)/);
+          n && (t = decodeURIComponent(n[1].split(":")[0].replace(/\+/g, " ")));
+        }
+        this.handleStyleChange("fontFamily", t);
+        const o = h();
+        o.__fontImports || (o.__fontImports = []), o.__fontImports.includes(e) || (o.__fontImports.push(e), w(o));
+        const s = this.ui.shadowRoot.querySelector('input[data-style="fontFamily"]');
+        s && (s.value = t);
+        const i = this.ui.shadowRoot.getElementById("canvas-font-import-url");
+        i && (i.value = ""), this.ui.showToast(`Font "${t}" loaded and applied successfully!`, "success");
+      } catch (t) {
+        console.error("Canvas: Failed to import font", t), this.ui.showToast("Failed to load custom font.", "danger");
+      }
   }
   /* --- Drag Engine --- */
   handleDragStart(e) {
     if (!this.active || !this.selectedElement) return;
     e.preventDefault();
     const t = this.selectedElement, o = window.getComputedStyle(t);
-    o.position === "static" && (t.style.position = "relative", this.recordStyleChange("position", "relative")), this.dragState = {
+    o.position === "static" && (t.style.position = "relative", this.recordStyleChange("position", "relative")), this._originalTransition = t.style.transition || "", t.style.setProperty("transition", "none", "important"), this.dragState = {
       isDragging: !0,
       startX: e.clientX,
       startY: e.clientY,
@@ -821,18 +883,18 @@ class D {
   }
   handleDragMove(e) {
     if (!this.dragState.isDragging || !this.selectedElement) return;
-    const t = e.clientX - this.dragState.startX, o = e.clientY - this.dragState.startY, s = this.dragState.startLeft + t, a = this.dragState.startTop + o;
-    this.selectedElement.style.left = `${s}px`, this.selectedElement.style.top = `${a}px`, this.recordStyleChange("left", `${s}px`), this.recordStyleChange("top", `${a}px`), this.repositionOverlays();
+    const t = e.clientX - this.dragState.startX, o = e.clientY - this.dragState.startY, s = this.dragState.startLeft + t, i = this.dragState.startTop + o;
+    this.selectedElement.style.left = `${s}px`, this.selectedElement.style.top = `${i}px`, this.recordStyleChange("left", `${s}px`), this.recordStyleChange("top", `${i}px`), this.repositionOverlays();
   }
   handleDragEnd() {
-    this.dragState.isDragging = !1, document.removeEventListener("mousemove", this.handleDragMove), document.removeEventListener("mouseup", this.handleDragEnd);
+    this.dragState.isDragging = !1, this.selectedElement && (this.selectedElement.style.transition = this._originalTransition), document.removeEventListener("mousemove", this.handleDragMove), document.removeEventListener("mouseup", this.handleDragEnd);
   }
   /* --- Resize Engine --- */
   handleResizeStart(e) {
     if (!this.active || !this.selectedElement) return;
     e.preventDefault(), e.stopPropagation();
     const t = this.selectedElement, o = window.getComputedStyle(t), s = t.getBoundingClientRect();
-    this.resizeState = {
+    this._originalTransition = t.style.transition || "", t.style.setProperty("transition", "none", "important"), this.resizeState = {
       isResizing: !0,
       handle: e.target.dataset.handle,
       startX: e.clientX,
@@ -845,21 +907,21 @@ class D {
   }
   handleResizeMove(e) {
     if (!this.resizeState.isResizing || !this.selectedElement) return;
-    const t = this.selectedElement, o = this.resizeState, s = e.clientX - o.startX, a = e.clientY - o.startY;
-    let n = o.startWidth, l = o.startHeight, r = o.startLeft, d = o.startTop;
-    const c = 10;
-    if (o.handle.includes("r") && (n = Math.max(c, o.startWidth + s)), o.handle.includes("b") && (l = Math.max(c, o.startHeight + a)), o.handle.includes("l")) {
+    const t = this.selectedElement, o = this.resizeState, s = e.clientX - o.startX, i = e.clientY - o.startY;
+    let n = o.startWidth, l = o.startHeight, r = o.startLeft, c = o.startTop;
+    const d = 10;
+    if (o.handle.includes("r") && (n = Math.max(d, o.startWidth + s)), o.handle.includes("b") && (l = Math.max(d, o.startHeight + i)), o.handle.includes("l")) {
       const p = o.startWidth - s;
-      p > c && (n = p, r = o.startLeft + s);
+      p > d && (n = p, r = o.startLeft + s);
     }
     if (o.handle.includes("t")) {
-      const p = o.startHeight - a;
-      p > c && (l = p, d = o.startTop + a);
+      const p = o.startHeight - i;
+      p > d && (l = p, c = o.startTop + i);
     }
-    (o.handle.includes("r") || o.handle.includes("l")) && (t.style.width = `${n}px`, this.recordStyleChange("width", `${n}px`)), (o.handle.includes("b") || o.handle.includes("t")) && (t.style.height = `${l}px`, this.recordStyleChange("height", `${l}px`)), o.handle.includes("l") && (t.style.left = `${r}px`, this.recordStyleChange("left", `${r}px`)), o.handle.includes("t") && (t.style.top = `${d}px`, this.recordStyleChange("top", `${d}px`)), this.repositionOverlays();
+    (o.handle.includes("r") || o.handle.includes("l")) && (t.style.width = `${n}px`, this.recordStyleChange("width", `${n}px`)), (o.handle.includes("b") || o.handle.includes("t")) && (t.style.height = `${l}px`, this.recordStyleChange("height", `${l}px`)), o.handle.includes("l") && (t.style.left = `${r}px`, this.recordStyleChange("left", `${r}px`)), o.handle.includes("t") && (t.style.top = `${c}px`, this.recordStyleChange("top", `${c}px`)), this.repositionOverlays();
   }
   handleResizeEnd() {
-    this.resizeState.isResizing = !1, document.removeEventListener("mousemove", this.handleResizeMove), document.removeEventListener("mouseup", this.handleResizeEnd);
+    this.resizeState.isResizing = !1, this.selectedElement && (this.selectedElement.style.transition = this._originalTransition), document.removeEventListener("mousemove", this.handleResizeMove), document.removeEventListener("mouseup", this.handleResizeEnd);
   }
   /* --- Properties Inspector Changes --- */
   handleStyleChange(e, t) {
@@ -871,30 +933,30 @@ class D {
   }
   /* --- Save / Cancel Actions --- */
   saveChanges() {
-    const e = v();
+    const e = h();
     Object.entries(this.draftChanges).forEach(([o, s]) => {
       e[o] || (e[o] = { styles: {}, text: void 0 }), s.styles && (e[o].styles = {
         ...e[o].styles,
         ...s.styles
       }), s.text !== void 0 && (e[o].text = s.text);
-    }), O(e), this.draftChanges = {};
+    }), w(e), this.draftChanges = {};
     const t = this.generateCSSExport(e);
     this.ui.showToast("All modifications saved successfully!", "success"), this.ui.showCodeExport(t);
   }
   cancelChanges() {
-    w(this.draftChanges), this.draftChanges = {}, this.ui.showToast("Changes discarded.", "info"), this.deselectElement();
+    S(this.draftChanges), this.draftChanges = {}, this.ui.showToast("Changes discarded.", "info"), this.deselectElement();
   }
   resetAllChanges() {
-    I(), this.draftChanges = {}, this.ui.showToast("All visual overrides reset.", "danger"), this.deselectElement();
+    B(), this.draftChanges = {}, this.ui.showToast("All visual overrides reset.", "danger"), this.deselectElement();
   }
   generateCSSExport(e) {
     let t = "";
     return Object.entries(e).forEach(([o, s]) => {
-      const a = s.styles || {}, n = Object.keys(a);
+      const i = s.styles || {}, n = Object.keys(i);
       n.length > 0 && (t += `${o} {
 `, n.forEach((l) => {
-        const r = T(l);
-        t += `  ${r}: ${a[l]};
+        const r = D(l);
+        t += `  ${r}: ${i[l]};
 `;
       }), t += `}
 
@@ -903,21 +965,21 @@ class D {
   }
 }
 try {
-  M();
-} catch (i) {
-  console.error("Canvas: Failed to initialize saved modifications", i);
+  $();
+} catch (a) {
+  console.error("Canvas: Failed to initialize saved modifications", a);
 }
-function u() {
+function b() {
   if (!window.__CanvasEditor) {
     if (!document.body) {
-      window.addEventListener("DOMContentLoaded", u);
+      window.addEventListener("DOMContentLoaded", b);
       return;
     }
     try {
-      window.__CanvasEditor = new D(), console.log("Canvas Visual Editor initialized successfully!");
-    } catch (i) {
-      console.error("Canvas: Failed to initialize editor", i);
+      window.__CanvasEditor = new A(), console.log("Canvas Visual Editor initialized successfully!");
+    } catch (a) {
+      console.error("Canvas: Failed to initialize editor", a);
     }
   }
 }
-document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", u) : u();
+document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", b) : b();

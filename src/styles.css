@@ -109,7 +109,7 @@
   z-index: 999990;
   display: none;
   box-sizing: border-box;
-  transition: top 0.08s ease, left 0.08s ease, width 0.08s ease, height 0.08s ease, border-radius 0.08s ease;
+  transition: top 0.08s ease, left 0.08s ease, width 0.08s ease, height 0.08s ease, border-radius 0.08s ease, opacity 0.2s ease;
 }
 
 .canvas-hover-overlay {
@@ -121,8 +121,16 @@
 .canvas-selection-overlay {
   border: 2px solid var(--accent-color);
   background: rgba(6, 182, 212, 0.01);
-  box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.25);
   pointer-events: auto; /* Allow handle interaction */
+}
+
+/* Fade out selection and hover overlays when user is actively using the inspector */
+.canvas-inspector-hovered .canvas-selection-overlay {
+  opacity: 0.15;
+}
+.canvas-inspector-hovered .canvas-hover-overlay {
+  opacity: 0;
 }
 
 /* Overlay Labels */
@@ -482,6 +490,11 @@
   transition: all 0.2s;
   box-sizing: border-box;
   width: 100%;
+}
+
+.control-select option {
+  background-color: #0f172a;
+  color: var(--text-primary);
 }
 
 .control-input:focus, .control-select:focus {

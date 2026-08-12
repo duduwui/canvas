@@ -5,7 +5,8 @@ import {
   revertModifications, 
   getPageModifications, 
   savePageModifications, 
-  clearPageModifications 
+  clearPageModifications,
+  injectFontStylesheet
 } from './persistence.js';
 
 export class CanvasEditor {
@@ -29,6 +30,7 @@ export class CanvasEditor {
     this.handleResizeEnd = this.handleResizeEnd.bind(this);
     this.handleDoubleClick = this.handleDoubleClick.bind(this);
     this.handleTextChange = this.handleTextChange.bind(this);
+    this.handleFontImport = this.handleFontImport.bind(this);
     
     // Drag & Resize state tracking
     this.dragState = {
@@ -55,6 +57,7 @@ export class CanvasEditor {
       onToggleActive: () => this.toggleActive(),
       onStyleChange: (prop, val) => this.handleStyleChange(prop, val),
       onTextChange: (text) => this.handleTextChange(text),
+      onFontImport: (url) => this.handleFontImport(url),
       onSave: () => this.saveChanges(),
       onCancel: () => this.cancelChanges(),
       onReset: () => this.resetAllChanges()
@@ -338,6 +341,54 @@ export class CanvasEditor {
     this.repositionOverlays();
   }
 
+  handleFontImport(url) {
+    if (!url) return;
+    
+    try {
+      // 1. Inject link stylesheet into light DOM head
+      injectFontStylesheet(url);
+      
+      // Parse a clean font-family name from Google Fonts URL or use raw string
+      let fontName = url.trim();
+      if (url.includes('family=')) {
+        const match = url.match(/family=([^&:]+)/);
+        if (match) {
+          // e.g. Montserrat or Playfair+Display
+          fontName = decodeURIComponent(match[1].split(':')[0].replace(/\+/g, ' '));
+        }
+      }
+      
+      // 2. Register font family style change on target element
+      this.handleStyleChange('fontFamily', fontName);
+      
+      // 3. Save this stylesheet to metadata modifications
+      const pageMods = getPageModifications();
+      if (!pageMods.__fontImports) {
+        pageMods.__fontImports = [];
+      }
+      if (!pageMods.__fontImports.includes(url)) {
+        pageMods.__fontImports.push(url);
+        savePageModifications(pageMods);
+      }
+      
+      // 4. Update the input field in UI
+      const fontFamilyInput = this.ui.shadowRoot.querySelector('input[data-style="fontFamily"]');
+      if (fontFamilyInput) {
+        fontFamilyInput.value = fontName;
+      }
+      
+      const fontImportUrl = this.ui.shadowRoot.getElementById('canvas-font-import-url');
+      if (fontImportUrl) {
+        fontImportUrl.value = '';
+      }
+      
+      this.ui.showToast(`Font "${fontName}" loaded and applied successfully!`, 'success');
+    } catch (e) {
+      console.error('Canvas: Failed to import font', e);
+      this.ui.showToast('Failed to load custom font.', 'danger');
+    }
+  }
+
   /* --- Drag Engine --- */
   handleDragStart(e) {
     if (!this.active || !this.selectedElement) return;
@@ -350,6 +401,10 @@ export class CanvasEditor {
       el.style.position = 'relative';
       this.recordStyleChange('position', 'relative');
     }
+    
+    // Disable CSS transition temporarily during drag
+    this._originalTransition = el.style.transition || '';
+    el.style.setProperty('transition', 'none', 'important');
     
     this.dragState = {
       isDragging: true,
@@ -383,6 +438,9 @@ export class CanvasEditor {
 
   handleDragEnd() {
     this.dragState.isDragging = false;
+    if (this.selectedElement) {
+      this.selectedElement.style.transition = this._originalTransition;
+    }
     document.removeEventListener('mousemove', this.handleDragMove);
     document.removeEventListener('mouseup', this.handleDragEnd);
   }
@@ -396,6 +454,10 @@ export class CanvasEditor {
     const el = this.selectedElement;
     const computed = window.getComputedStyle(el);
     const rect = el.getBoundingClientRect();
+    
+    // Disable CSS transition temporarily during resize
+    this._originalTransition = el.style.transition || '';
+    el.style.setProperty('transition', 'none', 'important');
     
     this.resizeState = {
       isResizing: true,
@@ -471,6 +533,9 @@ export class CanvasEditor {
 
   handleResizeEnd() {
     this.resizeState.isResizing = false;
+    if (this.selectedElement) {
+      this.selectedElement.style.transition = this._originalTransition;
+    }
     document.removeEventListener('mousemove', this.handleResizeMove);
     document.removeEventListener('mouseup', this.handleResizeEnd);
   }

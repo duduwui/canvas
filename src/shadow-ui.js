@@ -37,9 +37,9 @@ export class ShadowUI {
     this.shadowRoot.appendChild(styleTag);
     
     // 4. Create HTML Structure
-    const uiContainer = document.createElement('div');
-    uiContainer.innerHTML = this.getHTMLTemplate();
-    this.shadowRoot.appendChild(uiContainer);
+    this.uiContainer = document.createElement('div');
+    this.uiContainer.innerHTML = this.getHTMLTemplate();
+    this.shadowRoot.appendChild(this.uiContainer);
     
     // 5. Query Shadow Elements
     this.badge = this.shadowRoot.querySelector('.canvas-badge');
@@ -244,6 +244,25 @@ export class ShadowUI {
                 </div>
                 <div class="control-row">
                   <!-- Empty cell to balance grid -->
+                </div>
+
+                <div class="control-row full-width">
+                  <label class="control-label">
+                    Font Family
+                    <span class="info-icon" data-tip="Sets font type. Example: Inter, Georgia, sans-serif." data-example="Montserrat">ⓘ</span>
+                  </label>
+                  <input type="text" class="control-input" data-style="fontFamily" placeholder="Inherited / e.g. Inter">
+                </div>
+
+                <div class="control-row full-width">
+                  <label class="control-label">
+                    Load Custom Font
+                    <span class="info-icon" data-tip="Type a Google Font name or paste stylesheet URL to load it dynamically." data-example="Montserrat">ⓘ</span>
+                  </label>
+                  <div style="display: flex; gap: 8px; width: 100%; box-sizing: border-box;">
+                    <input type="text" class="control-input" id="canvas-font-import-url" placeholder="e.g. Montserrat or Google CSS Link" style="flex: 1; min-width: 0;">
+                    <button class="btn btn-secondary" id="canvas-font-import-btn" style="padding: 0 12px; font-size: 11px; flex-shrink: 0; width: auto; height: 34px; margin: 0; border-radius: 8px;">Load</button>
+                  </div>
                 </div>
 
                 <div class="control-row full-width">
@@ -526,6 +545,32 @@ export class ShadowUI {
     this.shadowRoot.getElementById('inspector-reset-btn').addEventListener('click', () => {
       if (confirm('Are you sure you want to clear ALL visual edits you made to this page?')) {
         if (this.callbacks.onReset) this.callbacks.onReset();
+      }
+    });
+
+    // Fade overlays on inspector hover
+    this.inspector.addEventListener('mouseenter', () => {
+      this.uiContainer.classList.add('canvas-inspector-hovered');
+    });
+    this.inspector.addEventListener('mouseleave', () => {
+      this.uiContainer.classList.remove('canvas-inspector-hovered');
+    });
+
+    // Custom Font Import Handlers
+    const fontImportBtn = this.shadowRoot.getElementById('canvas-font-import-btn');
+    const fontImportUrl = this.shadowRoot.getElementById('canvas-font-import-url');
+    fontImportBtn.addEventListener('click', () => {
+      const url = fontImportUrl.value.trim();
+      if (url) {
+        if (this.callbacks.onFontImport) {
+          this.callbacks.onFontImport(url);
+        }
+      }
+    });
+    fontImportUrl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        fontImportBtn.click();
       }
     });
 
