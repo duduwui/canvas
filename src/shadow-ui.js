@@ -2,10 +2,12 @@ import styles from './styles.css?inline';
 
 export class ShadowUI {
   constructor(callbacks = {}) {
-    this.callbacks = callbacks; // { onStyleChange, onTextChange, onSave, onCancel, onReset }
+    this.callbacks = callbacks; 
+    // callbacks: { onStyleChange, onTextChange, onSave, onCancel, onReset, onLocalFontUpload, onQuickAction, onLayerSelect, onDeselect, onGlobalFontChange }
     
     this.root = null;
     this.shadowRoot = null;
+    this.uiContainer = null;
     
     // UI elements inside shadow DOM
     this.badge = null;
@@ -18,7 +20,6 @@ export class ShadowUI {
     
     // Form elements caching
     this.inputs = {};
-    
     this.selectedElement = null;
     
     this.init();
@@ -70,7 +71,7 @@ export class ShadowUI {
       <!-- Badge -->
       <div class="canvas-badge" id="canvas-badge">
         <div class="badge-icon"></div>
-        <div class="badge-text">Canvas Mode</div>
+        <div class="badge-text">Visual Editor</div>
       </div>
 
       <!-- Hover Overlay -->
@@ -93,16 +94,23 @@ export class ShadowUI {
         <div class="resize-handle br" data-handle="br"></div>
 
         <!-- Floating tag label (serves as drag handle) -->
-        <div class="overlay-label" data-action="drag">div.selected</div>
+        <div class="overlay-label" data-action="drag" title="Hold click here to drag & reposition this item">div.selected</div>
         
         <!-- Quick Actions Canvas Toolbar -->
         <div class="canvas-quick-toolbar">
-          <button class="quick-btn" data-action="parent" title="Select Parent">↑ Parent</button>
-          <button class="quick-btn" data-action="child" title="Select Child">↓ Child</button>
-          <button class="quick-btn" data-action="edit-text" title="Edit Text">✎ Edit</button>
-          <button class="quick-btn" data-action="visibility" title="Toggle Hide/Show">👁 Hide</button>
-          <button class="quick-btn" data-action="duplicate" title="Clone Element">❐ Clone</button>
-          <button class="quick-btn" data-action="delete" title="Delete Element" style="color: var(--danger-color);">🗑 Del</button>
+          <button class="quick-btn" data-action="parent" title="Select Parent Container">↑ Parent</button>
+          <button class="quick-btn" data-action="child" title="Select Child Item">↓ Child</button>
+          <button class="quick-btn" data-action="edit-text" title="Edit Text Content">✎ Edit Text</button>
+          <button class="quick-btn" data-action="copy-style" title="Copy visual appearance styles of this item">❐ Copy style</button>
+          <button class="quick-btn" data-action="paste-style" title="Paste copied styles onto this item">📋 Paste style</button>
+          <button class="quick-btn" data-action="visibility" title="Hide/show item">👁 Hide</button>
+          <button class="quick-btn" data-action="duplicate" title="Clone Item">❐ Clone</button>
+          <button class="quick-btn" data-action="delete" title="Delete Item" style="color: var(--danger-color);">🗑 Del</button>
+        </div>
+
+        <!-- Floating Contextual Quick Settings Popover -->
+        <div class="canvas-quick-popover" id="canvas-quick-popover" style="display: none;">
+          <!-- Content rendered dynamically via JS -->
         </div>
         
         <div class="dimension-label">0 × 0</div>
@@ -111,417 +119,424 @@ export class ShadowUI {
       <!-- Properties Inspector -->
       <div class="canvas-inspector">
         <div class="inspector-header">
-          <h3 class="inspector-title" id="inspector-element-title">Select Element</h3>
+          <h3 class="inspector-title" id="inspector-element-title">Select an item</h3>
           <div style="display: flex; gap: 4px; align-items: center;">
-            <button class="inspector-action-btn" id="inspector-dock-btn" title="Dock left/right">⇄</button>
+            <button class="inspector-action-btn" id="inspector-dock-btn" title="Slide panel to left/right side">⇄</button>
             <button class="inspector-close" id="inspector-close-btn">×</button>
           </div>
         </div>
 
         <!-- Tab Selector -->
         <div class="inspector-tabs">
-          <button class="tab-btn active" data-tab="styles">Styles</button>
-          <button class="tab-btn" data-tab="layers">Layers</button>
+          <button class="tab-btn active" data-tab="styles">Customize</button>
+          <button class="tab-btn" data-tab="layers">Hierarchy</button>
         </div>
         
         <!-- TAB 1: STYLES CONTROLS -->
         <div class="tab-content active" id="tab-styles">
           <div class="inspector-content">
-          <!-- Collapsible Content -->
-          <div class="inspector-section">
-            <div class="section-header">
-              <h4 class="section-title">Content</h4>
-              <span class="section-chevron">▼</span>
-            </div>
-            <div class="section-body">
-              <div class="control-row full-width">
-                <label class="control-label">
-                  Text Content
-                  <span class="info-icon" data-tip="Directly edit the raw text or HTML content of the selected element." data-example="Change a button label or title.">ⓘ</span>
-                </label>
-                <textarea class="control-input" id="inspector-text-content" rows="2" placeholder="Click and type to change text..."></textarea>
+            <!-- Collapsible Content -->
+            <div class="inspector-section">
+              <div class="section-header">
+                <h4 class="section-title">Edit text content</h4>
+                <span class="section-chevron">▼</span>
               </div>
-            </div>
-          </div>
-          
-          <!-- Collapsible Dimensions -->
-          <div class="inspector-section">
-            <div class="section-header">
-              <h4 class="section-title">Dimensions</h4>
-              <span class="section-chevron">▼</span>
-            </div>
-            <div class="section-body">
-              <div class="control-grid">
-                <div class="control-row">
-                  <label class="control-label">
-                    Width
-                    <span class="info-icon" data-tip="Defines the horizontal size of the element (in px, % or auto)." data-example="350px or 100%">ⓘ</span>
-                  </label>
-                  <input type="text" class="control-input" data-style="width" placeholder="auto">
-                </div>
-                <div class="control-row">
-                  <label class="control-label">
-                    Height
-                    <span class="info-icon" data-tip="Defines the vertical size of the element (in px, % or auto)." data-example="200px or auto">ⓘ</span>
-                  </label>
-                  <input type="text" class="control-input" data-style="height" placeholder="auto">
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Collapsible Spacing -->
-          <div class="inspector-section">
-            <div class="section-header">
-              <h4 class="section-title">Spacing (px)</h4>
-              <span class="section-chevron">▼</span>
-            </div>
-            <div class="section-body">
-              <div class="control-grid">
-                <div class="control-row">
-                  <label class="control-label">Margin Top</label>
-                  <input type="number" class="control-input" data-style="marginTop" placeholder="0">
-                </div>
-                <div class="control-row">
-                  <label class="control-label">Margin Bottom</label>
-                  <input type="number" class="control-input" data-style="marginBottom" placeholder="0">
-                </div>
-                <div class="control-row">
-                  <label class="control-label">Padding Top</label>
-                  <input type="number" class="control-input" data-style="paddingTop" placeholder="0">
-                </div>
-                <div class="control-row">
-                  <label class="control-label">Padding Bottom</label>
-                  <input type="number" class="control-input" data-style="paddingBottom" placeholder="0">
-                </div>
-                <div class="control-row">
-                  <label class="control-label">Margin Left</label>
-                  <input type="number" class="control-input" data-style="marginLeft" placeholder="0">
-                </div>
-                <div class="control-row">
-                  <label class="control-label">Margin Right</label>
-                  <input type="number" class="control-input" data-style="marginRight" placeholder="0">
-                </div>
-                <div class="control-row">
-                  <label class="control-label">Padding Left</label>
-                  <input type="number" class="control-input" data-style="paddingLeft" placeholder="0">
-                </div>
-                <div class="control-row">
-                  <label class="control-label">Padding Right</label>
-                  <input type="number" class="control-input" data-style="paddingRight" placeholder="0">
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Collapsible Typography (Collapsed by default) -->
-          <div class="inspector-section collapsed">
-            <div class="section-header">
-              <h4 class="section-title">Typography</h4>
-              <span class="section-chevron">▼</span>
-            </div>
-            <div class="section-body">
-              <div class="control-grid">
-                <div class="control-row">
-                  <label class="control-label">Font Size (px)</label>
-                  <input type="number" class="control-input" data-style="fontSize" placeholder="16">
-                </div>
-                <div class="control-row">
-                  <label class="control-label">Font Weight</label>
-                  <select class="control-select" data-style="fontWeight">
-                    <option value="">Default</option>
-                    <option value="100">Thin</option>
-                    <option value="300">Light</option>
-                    <option value="400">Regular</option>
-                    <option value="500">Medium</option>
-                    <option value="600">Semibold</option>
-                    <option value="700">Bold</option>
-                    <option value="900">Black</option>
-                  </select>
-                </div>
-                
-                <div class="control-row">
-                  <label class="control-label">
-                    Line Height
-                    <span class="info-icon" data-tip="Defines vertical spacing between text lines. Can be unitless or px." data-example="1.5 or 24px">ⓘ</span>
-                  </label>
-                  <input type="text" class="control-input" data-style="lineHeight" placeholder="normal">
-                </div>
-                <div class="control-row">
-                  <label class="control-label">
-                    Letter Spacing
-                    <span class="info-icon" data-tip="Controls character gap spacing." data-example="1px or 0.05em">ⓘ</span>
-                  </label>
-                  <input type="text" class="control-input" data-style="letterSpacing" placeholder="normal">
-                </div>
-                
-                <div class="control-row">
-                  <label class="control-label">Font Style</label>
-                  <select class="control-select" data-style="fontStyle">
-                    <option value="">Normal</option>
-                    <option value="italic">Italic</option>
-                    <option value="oblique">Oblique</option>
-                  </select>
-                </div>
-                <div class="control-row">
-                  <!-- Empty cell to balance grid -->
-                </div>
-
+              <div class="section-body">
                 <div class="control-row full-width">
-                  <label class="control-label">
-                    Font Family
-                    <span class="info-icon" data-tip="Sets font type. Example: Inter, Georgia, sans-serif." data-example="Montserrat">ⓘ</span>
-                  </label>
-                  <input type="text" class="control-input" data-style="fontFamily" placeholder="Inherited / e.g. Inter">
+                  <label class="control-label">Text Inside Item</label>
+                  <textarea class="control-input" id="inspector-text-content" placeholder="Type text content here..."></textarea>
                 </div>
+              </div>
+            </div>
 
-                <div class="control-row full-width">
-                  <label class="control-label">
-                    Load Custom Font
-                    <span class="info-icon" data-tip="Type a Google Font name or paste stylesheet URL to load it dynamically." data-example="Montserrat">ⓘ</span>
-                  </label>
-                  <div style="display: flex; gap: 8px; width: 100%; box-sizing: border-box;">
-                    <input type="text" class="control-input" id="canvas-font-import-url" placeholder="e.g. Montserrat or Google CSS Link" style="flex: 1; min-width: 0;">
-                    <button class="btn btn-secondary" id="canvas-font-import-btn" style="padding: 0 12px; font-size: 11px; flex-shrink: 0; width: auto; height: 34px; margin: 0; border-radius: 8px;">Load</button>
+            <!-- Collapsible Dimensions -->
+            <div class="inspector-section collapsed">
+              <div class="section-header">
+                <h4 class="section-title">Size & Dimensions</h4>
+                <span class="section-chevron">▼</span>
+              </div>
+              <div class="section-body">
+                <div class="control-grid">
+                  <div class="control-row">
+                    <label class="control-label">Width</label>
+                    <input type="text" class="control-input" data-style="width" placeholder="auto">
+                  </div>
+                  <div class="control-row">
+                    <label class="control-label">Height</label>
+                    <input type="text" class="control-input" data-style="height" placeholder="auto">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Collapsible Spacing -->
+            <div class="inspector-section collapsed">
+              <div class="section-header">
+                <h4 class="section-title">Distance & Breathing Room</h4>
+                <span class="section-chevron">▼</span>
+              </div>
+              <div class="section-body">
+                <!-- Margin / Outer Spacing -->
+                <div class="section-title" style="font-size: 10px; margin-bottom: 4px;">Outer Spacing (Margin)</div>
+                <div class="control-grid" style="margin-bottom: 10px;">
+                  <div class="control-row">
+                    <label class="control-label">Top Space</label>
+                    <input type="text" class="control-input" data-style="marginTop" placeholder="0px">
+                  </div>
+                  <div class="control-row">
+                    <label class="control-label">Bottom Space</label>
+                    <input type="text" class="control-input" data-style="marginBottom" placeholder="0px">
+                  </div>
+                  <div class="control-row">
+                    <label class="control-label">Left Space</label>
+                    <input type="text" class="control-input" data-style="marginLeft" placeholder="0px">
+                  </div>
+                  <div class="control-row">
+                    <label class="control-label">Right Space</label>
+                    <input type="text" class="control-input" data-style="marginRight" placeholder="0px">
                   </div>
                 </div>
 
-                <div class="control-row full-width">
-                  <label class="control-label">
-                    Attach Font Files (.ttf, .woff, .woff2)
-                    <span class="info-icon" data-tip="Upload binary font files from your device to load them locally." data-example="Select my-font.ttf">ⓘ</span>
-                  </label>
-                  <div class="font-upload-row">
-                    <label class="custom-file-upload">
-                      <input type="file" id="canvas-font-file-input" accept=".ttf,.woff,.woff2" multiple style="display:none;">
-                      <span id="canvas-file-upload-btn-label">📁 Choose local font files...</span>
+                <!-- Padding / Inner Spacing -->
+                <div class="section-title" style="font-size: 10px; margin-bottom: 4px;">Inner Breathing Room (Padding)</div>
+                <div class="control-grid">
+                  <div class="control-row">
+                    <label class="control-label">Top Breathing</label>
+                    <input type="text" class="control-input" data-style="paddingTop" placeholder="0px">
+                  </div>
+                  <div class="control-row">
+                    <label class="control-label">Bottom Breathing</label>
+                    <input type="text" class="control-input" data-style="paddingBottom" placeholder="0px">
+                  </div>
+                  <div class="control-row">
+                    <label class="control-label">Left Breathing</label>
+                    <input type="text" class="control-input" data-style="paddingLeft" placeholder="0px">
+                  </div>
+                  <div class="control-row">
+                    <label class="control-label">Right Breathing</label>
+                    <input type="text" class="control-input" data-style="paddingRight" placeholder="0px">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Collapsible Typography -->
+            <div class="inspector-section collapsed">
+              <div class="section-header">
+                <h4 class="section-title">Text Style & Shape</h4>
+                <span class="section-chevron">▼</span>
+              </div>
+              <div class="section-body">
+                <div class="control-grid">
+                  <div class="control-row full-width">
+                    <label class="control-label">
+                      Select Font Family
+                      <span class="info-icon" data-tip="Pick a font style. E.g. Montserrat, Georgia, sans-serif." data-example="Montserrat">ⓘ</span>
                     </label>
-                    <div id="canvas-font-file-list" style="font-size: 10px; color: var(--text-muted); line-height: 1.3; margin-top: 4px;">No files chosen</div>
+                    <input type="text" class="control-input" data-style="fontFamily" placeholder="Inherited / e.g. Inter">
                   </div>
-                </div>
 
-                <div class="control-row full-width">
-                  <label class="control-label">Text Color</label>
-                  <div class="color-picker-row">
-                    <div class="color-preview-box" id="color-text-preview">
-                      <input type="color" class="color-native-input" data-style="color">
+                  <div class="control-row full-width">
+                    <label class="control-label">
+                      Global Font (Entire Website)
+                      <span class="info-icon" data-tip="Change font lettering styles across the entire webpage." data-example="Montserrat">ⓘ</span>
+                    </label>
+                    <input type="text" class="control-input" id="canvas-global-font-input" placeholder="e.g. Montserrat or Inter">
+                  </div>
+
+                  <div class="control-row full-width">
+                    <label class="control-label">
+                      Add Google Font Style
+                      <span class="info-icon" data-tip="Type a Google Font name to download it instantly from Google Web Fonts." data-example="Montserrat">ⓘ</span>
+                    </label>
+                    <div style="display: flex; gap: 8px; width: 100%; box-sizing: border-box;">
+                      <input type="text" class="control-input" id="canvas-font-import-url" placeholder="e.g. Montserrat or Google CSS Link" style="flex: 1; min-width: 0;">
+                      <button class="btn btn-secondary" id="canvas-font-import-btn" style="padding: 0 12px; font-size: 11px; flex-shrink: 0; width: auto; height: 34px; margin: 0; border-radius: 8px;">Add</button>
                     </div>
-                    <input type="text" class="control-input color-text-input" data-style-sync="color" placeholder="#000000">
                   </div>
-                  <div class="color-swatches">
-                    <button class="swatch-btn swatch-transparent" data-color="transparent" title="Transparent"></button>
-                    <button class="swatch-btn" data-color="#ffffff" style="background-color: #ffffff;" title="White"></button>
-                    <button class="swatch-btn" data-color="#0f172a" style="background-color: #0f172a;" title="Slate"></button>
-                    <button class="swatch-btn" data-color="#6366f1" style="background-color: #6366f1;" title="Indigo"></button>
-                    <button class="swatch-btn" data-color="#06b6d4" style="background-color: #06b6d4;" title="Cyan"></button>
-                    <button class="swatch-btn" data-color="#10b981" style="background-color: #10b981;" title="Green"></button>
-                    <button class="swatch-btn" data-color="#ef4444" style="background-color: #ef4444;" title="Red"></button>
-                    <button class="swatch-btn" data-color="#f59e0b" style="background-color: #f59e0b;" title="Yellow"></button>
+
+                  <div class="control-row full-width">
+                    <label class="control-label">
+                      Attach Font Files (.ttf, .woff, .woff2)
+                      <span class="info-icon" data-tip="Upload binary font files from your device to load them locally." data-example="Select my-font.ttf">ⓘ</span>
+                    </label>
+                    <div class="font-upload-row">
+                      <label class="custom-file-upload">
+                        <input type="file" id="canvas-font-file-input" accept=".ttf,.woff,.woff2" multiple style="display:none;">
+                        <span id="canvas-file-upload-btn-label">📁 Choose local font files...</span>
+                      </label>
+                      <div id="canvas-font-file-list" style="font-size: 10px; color: var(--text-muted); line-height: 1.3; margin-top: 4px;">No files chosen</div>
+                    </div>
                   </div>
-                </div>
-                
-                <div class="control-row full-width">
-                  <label class="control-label">Text Align</label>
-                  <div class="align-buttons">
-                    <button class="align-btn" data-style="textAlign" data-val="left">Left</button>
-                    <button class="align-btn" data-style="textAlign" data-val="center">Center</button>
-                    <button class="align-btn" data-style="textAlign" data-val="right">Right</button>
-                    <button class="align-btn" data-style="textAlign" data-val="justify">Justify</button>
+
+                  <div class="control-row">
+                    <label class="control-label">Text Size (Pixels)</label>
+                    <input type="number" class="control-input" data-style="fontSize" placeholder="16">
+                  </div>
+                  <div class="control-row">
+                    <label class="control-label">Text Boldness</label>
+                    <select class="control-select" data-style="fontWeight">
+                      <option value="">Default</option>
+                      <option value="100">Thin</option>
+                      <option value="300">Light</option>
+                      <option value="400">Regular</option>
+                      <option value="500">Medium</option>
+                      <option value="600">Semibold</option>
+                      <option value="700">Bold</option>
+                      <option value="900">Black</option>
+                    </select>
+                  </div>
+                  
+                  <div class="control-row">
+                    <label class="control-label">
+                      Row Line Spacing
+                      <span class="info-icon" data-tip="Breathing space height between paragraphs. E.g. 1.5 or 24px." data-example="1.5">ⓘ</span>
+                    </label>
+                    <input type="text" class="control-input" data-style="lineHeight" placeholder="normal">
+                  </div>
+                  <div class="control-row">
+                    <label class="control-label">
+                      Letter Gap Spacing
+                      <span class="info-icon" data-tip="Pushes text characters apart horizontally. E.g. 1px." data-example="1px">ⓘ</span>
+                    </label>
+                    <input type="text" class="control-input" data-style="letterSpacing" placeholder="normal">
+                  </div>
+                  
+                  <div class="control-row">
+                    <label class="control-label">Text Slant (Italic)</label>
+                    <select class="control-select" data-style="fontStyle">
+                      <option value="">Normal</option>
+                      <option value="italic">Italic</option>
+                      <option value="oblique">Oblique</option>
+                    </select>
+                  </div>
+                  <div class="control-row">
+                    <!-- empty -->
+                  </div>
+
+                  <div class="control-row full-width">
+                    <label class="control-label">Text Color</label>
+                    <div class="color-picker-row">
+                      <div class="color-preview-box" id="color-text-preview">
+                        <input type="color" class="color-native-input" data-style="color">
+                      </div>
+                      <input type="text" class="control-input color-text-input" data-style-sync="color" placeholder="#000000">
+                    </div>
+                    <div class="color-swatches">
+                      <button class="swatch-btn swatch-transparent" data-color="transparent" title="Transparent"></button>
+                      <button class="swatch-btn" data-color="#ffffff" style="background-color: #ffffff;" title="White"></button>
+                      <button class="swatch-btn" data-color="#0f172a" style="background-color: #0f172a;" title="Slate"></button>
+                      <button class="swatch-btn" data-color="#6366f1" style="background-color: #6366f1;" title="Indigo"></button>
+                      <button class="swatch-btn" data-color="#06b6d4" style="background-color: #06b6d4;" title="Cyan"></button>
+                      <button class="swatch-btn" data-color="#10b981" style="background-color: #10b981;" title="Green"></button>
+                      <button class="swatch-btn" data-color="#ef4444" style="background-color: #ef4444;" title="Red"></button>
+                      <button class="swatch-btn" data-color="#f59e0b" style="background-color: #f59e0b;" title="Yellow"></button>
+                    </div>
+                  </div>
+                  
+                  <div class="control-row full-width">
+                    <label class="control-label">Text Horizontal Align</label>
+                    <div class="align-buttons">
+                      <button class="align-btn" data-style="textAlign" data-val="left">Left</button>
+                      <button class="align-btn" data-style="textAlign" data-val="center">Center</button>
+                      <button class="align-btn" data-style="textAlign" data-val="right">Right</button>
+                      <button class="align-btn" data-style="textAlign" data-val="justify">Justify</button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Collapsible Layout & Alignments (Collapsed by default) -->
-          <div class="inspector-section collapsed">
-            <div class="section-header">
-              <h4 class="section-title">Layout & Flex</h4>
-              <span class="section-chevron">▼</span>
-            </div>
-            <div class="section-body">
-              <div class="control-grid">
-                <div class="control-row">
-                  <label class="control-label">Display</label>
-                  <select class="control-select" data-style="display">
-                    <option value="">Default</option>
-                    <option value="block">block</option>
-                    <option value="inline-block">inline-block</option>
-                    <option value="flex">flex</option>
-                    <option value="grid">grid</option>
-                    <option value="inline">inline</option>
-                    <option value="none">none</option>
-                  </select>
-                </div>
-                <div class="control-row">
-                  <label class="control-label">
-                    Z-Index
-                    <span class="info-icon" data-tip="Specifies stack overlap position." data-example="10 or 999">ⓘ</span>
-                  </label>
-                  <input type="number" class="control-input" data-style="zIndex" placeholder="auto">
-                </div>
-
-                <!-- Flex alignments (Only applies if display is flex) -->
-                <div class="control-row full-width flex-control-row">
-                  <label class="control-label" style="font-size: 10px; color: var(--text-muted);">
-                    Flex Layout Controls (Requires Display: Flex)
-                  </label>
-                  <div class="control-grid">
-                    <div class="control-row">
-                      <label class="control-label">Direction</label>
-                      <select class="control-select" data-style="flexDirection">
-                        <option value="">Default</option>
-                        <option value="row">row</option>
-                        <option value="column">column</option>
-                        <option value="row-reverse">row-reverse</option>
-                        <option value="column-reverse">column-reverse</option>
-                      </select>
-                    </div>
-                    <div class="control-row">
-                      <label class="control-label">Justify Content</label>
-                      <select class="control-select" data-style="justifyContent">
-                        <option value="">Default</option>
-                        <option value="flex-start">start</option>
-                        <option value="center">center</option>
-                        <option value="flex-end">end</option>
-                        <option value="space-between">between</option>
-                        <option value="space-around">around</option>
-                      </select>
-                    </div>
-                    <div class="control-row">
-                      <label class="control-label">Align Items</label>
-                      <select class="control-select" data-style="alignItems">
-                        <option value="">Default</option>
-                        <option value="stretch">stretch</option>
-                        <option value="center">center</option>
-                        <option value="flex-start">start</option>
-                        <option value="flex-end">end</option>
-                      </select>
-                    </div>
-                    <div class="control-row">
-                      <label class="control-label">Flex Wrap</label>
-                      <select class="control-select" data-style="flexWrap">
-                        <option value="">Default</option>
-                        <option value="nowrap">no-wrap</option>
-                        <option value="wrap">wrap</option>
-                      </select>
+            <!-- Collapsible Borders -->
+            <div class="inspector-section collapsed">
+              <div class="section-header">
+                <h4 class="section-title">Border Outlines</h4>
+                <span class="section-chevron">▼</span>
+              </div>
+              <div class="section-body">
+                <div class="control-grid">
+                  <div class="control-row">
+                    <label class="control-label">Border Line Thickness</label>
+                    <input type="text" class="control-input" data-style="borderWidth" placeholder="0px">
+                  </div>
+                  <div class="control-row">
+                    <label class="control-label">Border Line Pattern</label>
+                    <select class="control-select" data-style="borderStyle">
+                      <option value="">None</option>
+                      <option value="solid">Solid Line</option>
+                      <option value="dashed">Dashed Line</option>
+                      <option value="dotted">Dotted Line</option>
+                      <option value="double">Double Line</option>
+                    </select>
+                  </div>
+                  <div class="control-row">
+                    <label class="control-label">Corner Smoothness</label>
+                    <input type="text" class="control-input" data-style="borderRadius" placeholder="0px">
+                  </div>
+                  <div class="control-row">
+                    <!-- Empty cell to balance grid -->
+                  </div>
+                  <div class="control-row full-width">
+                    <label class="control-label">Border Color</label>
+                    <div class="color-picker-row">
+                      <div class="color-preview-box" id="color-border-preview">
+                        <input type="color" class="color-native-input" data-style="borderColor">
+                      </div>
+                      <input type="text" class="control-input color-text-input" data-style-sync="borderColor" placeholder="transparent">
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Collapsible Borders & Spacers (Collapsed by default) -->
-          <div class="inspector-section collapsed">
-            <div class="section-header">
-              <h4 class="section-title">Borders & Corners</h4>
-              <span class="section-chevron">▼</span>
-            </div>
-            <div class="section-body">
-              <div class="control-grid">
-                <div class="control-row">
-                  <label class="control-label">Border Radius</label>
-                  <input type="number" class="control-input" data-style="borderRadius" placeholder="0">
-                </div>
-                <div class="control-row">
-                  <label class="control-label">Border Width</label>
-                  <input type="number" class="control-input" data-style="borderWidth" placeholder="0">
-                </div>
-                <div class="control-row">
-                  <label class="control-label">Border Style</label>
-                  <select class="control-select" data-style="borderStyle">
-                    <option value="">None</option>
-                    <option value="solid">solid</option>
-                    <option value="dashed">dashed</option>
-                    <option value="dotted">dotted</option>
-                    <option value="double">double</option>
-                  </select>
-                </div>
-                <div class="control-row">
-                  <!-- Empty cell to balance grid -->
-                </div>
-                <div class="control-row full-width">
-                  <label class="control-label">Border Color</label>
-                  <div class="color-picker-row">
-                    <div class="color-preview-box" id="color-border-preview">
-                      <input type="color" class="color-native-input" data-style="borderColor">
+            <!-- Collapsible Appearance -->
+            <div class="inspector-section collapsed">
+              <div class="section-header">
+                <h4 class="section-title">Background & Shadow Effects</h4>
+                <span class="section-chevron">▼</span>
+              </div>
+              <div class="section-body">
+                <div class="control-grid">
+                  <div class="control-row full-width">
+                    <label class="control-label">Background Color</label>
+                    <div class="color-picker-row">
+                      <div class="color-preview-box" id="color-bg-preview">
+                        <input type="color" class="color-native-input" data-style="backgroundColor">
+                      </div>
+                      <input type="text" class="control-input color-text-input" data-style-sync="backgroundColor" placeholder="transparent">
                     </div>
-                    <input type="text" class="control-input color-text-input" data-style-sync="borderColor" placeholder="transparent">
+                    <div class="color-swatches">
+                      <button class="swatch-btn swatch-transparent" data-color="transparent" title="Transparent"></button>
+                      <button class="swatch-btn" data-color="#ffffff" style="background-color: #ffffff;" title="White"></button>
+                      <button class="swatch-btn" data-color="#0f172a" style="background-color: #0f172a;" title="Slate"></button>
+                      <button class="swatch-btn" data-color="#6366f1" style="background-color: #6366f1;" title="Indigo"></button>
+                      <button class="swatch-btn" data-color="#06b6d4" style="background-color: #06b6d4;" title="Cyan"></button>
+                      <button class="swatch-btn" data-color="#10b981" style="background-color: #10b981;" title="Green"></button>
+                      <button class="swatch-btn" data-color="#ef4444" style="background-color: #ef4444;" title="Red"></button>
+                      <button class="swatch-btn" data-color="#f59e0b" style="background-color: #f59e0b;" title="Yellow"></button>
+                    </div>
+                  </div>
+                  
+                  <div class="control-row">
+                    <label class="control-label">Transparency (See-Through)</label>
+                    <input type="number" class="control-input" data-style="opacity" step="0.1" min="0" max="1" placeholder="1">
+                  </div>
+                  <div class="control-row">
+                    <!-- empty -->
+                  </div>
+
+                  <div class="control-row full-width">
+                    <label class="control-label">Depth Shadow & Glow</label>
+                    <select class="control-select" data-style="boxShadow">
+                      <option value="">None</option>
+                      <option value="0 1px 3px rgba(0,0,0,0.1)">Light</option>
+                      <option value="0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)">Medium</option>
+                      <option value="0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)">Large</option>
+                      <option value="0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)">Huge</option>
+                    </select>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Collapsible Appearance (Collapsed by default) -->
-          <div class="inspector-section collapsed">
-            <div class="section-header">
-              <h4 class="section-title">Appearance</h4>
-              <span class="section-chevron">▼</span>
-            </div>
-            <div class="section-body">
-              <div class="control-grid">
-                <div class="control-row full-width">
-                  <label class="control-label">Background Color</label>
-                  <div class="color-picker-row">
-                    <div class="color-preview-box" id="color-bg-preview">
-                      <input type="color" class="color-native-input" data-style="backgroundColor">
-                    </div>
-                    <input type="text" class="control-input color-text-input" data-style-sync="backgroundColor" placeholder="transparent">
+            <!-- Collapsible Layout -->
+            <div class="inspector-section collapsed">
+              <div class="section-header">
+                <h4 class="section-title">Items Positioning & Flow</h4>
+                <span class="section-chevron">▼</span>
+              </div>
+              <div class="section-body">
+                <div class="control-grid">
+                  <div class="control-row full-width">
+                    <label class="control-label">Display Layout Type</label>
+                    <select class="control-select" data-style="display">
+                      <option value="">Default</option>
+                      <option value="block">Full Row (Block)</option>
+                      <option value="inline-block">Shrink to Fit (Inline Block)</option>
+                      <option value="flex">Flexible Box (Flexbox)</option>
+                      <option value="grid">Grid Layout (Grid)</option>
+                      <option value="none">Hidden (Display None)</option>
+                    </select>
                   </div>
-                  <div class="color-swatches">
-                    <button class="swatch-btn swatch-transparent" data-color="transparent" title="Transparent"></button>
-                    <button class="swatch-btn" data-color="#ffffff" style="background-color: #ffffff;" title="White"></button>
-                    <button class="swatch-btn" data-color="#0f172a" style="background-color: #0f172a;" title="Slate"></button>
-                    <button class="swatch-btn" data-color="#6366f1" style="background-color: #6366f1;" title="Indigo"></button>
-                    <button class="swatch-btn" data-color="#06b6d4" style="background-color: #06b6d4;" title="Cyan"></button>
-                    <button class="swatch-btn" data-color="#10b981" style="background-color: #10b981;" title="Green"></button>
-                    <button class="swatch-btn" data-color="#ef4444" style="background-color: #ef4444;" title="Red"></button>
-                    <button class="swatch-btn" data-color="#f59e0b" style="background-color: #f59e0b;" title="Yellow"></button>
+                  
+                  <div class="control-row">
+                    <label class="control-label">Arrange Direction</label>
+                    <select class="control-select" data-style="flexDirection">
+                      <option value="">Default</option>
+                      <option value="row">Horizontal Row</option>
+                      <option value="column">Vertical Column</option>
+                    </select>
                   </div>
-                </div>
-                
-                <div class="control-row">
-                  <label class="control-label">Opacity (0-1)</label>
-                  <input type="number" class="control-input" data-style="opacity" step="0.1" min="0" max="1" placeholder="1">
-                </div>
-                <div class="control-row">
-                  <!-- Empty spacer cell -->
-                </div>
+                  <div class="control-row">
+                    <label class="control-label">Wrap Items</label>
+                    <select class="control-select" data-style="flexWrap">
+                      <option value="">Default</option>
+                      <option value="nowrap">No Wrap (Stay on same row)</option>
+                      <option value="wrap">Wrap Items to new rows</option>
+                    </select>
+                  </div>
 
-                <div class="control-row full-width">
-                  <label class="control-label">Box Shadow</label>
-                  <select class="control-select" data-style="boxShadow">
-                    <option value="">None</option>
-                    <option value="0 1px 3px rgba(0,0,0,0.1)">Light</option>
-                    <option value="0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)">Medium</option>
-                    <option value="0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)">Large</option>
-                    <option value="0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)">Huge</option>
-                  </select>
+                  <div class="control-row full-width">
+                    <label class="control-label">Spacing Between Items (Horizontal)</label>
+                    <select class="control-select" data-style="justifyContent">
+                      <option value="">Default</option>
+                      <option value="flex-start">Align to Start</option>
+                      <option value="center">Align to Center</option>
+                      <option value="flex-end">Align to End</option>
+                      <option value="space-between">Space Evenly between items</option>
+                      <option value="space-around">Space Evenly around items</option>
+                    </select>
+                  </div>
+
+                  <div class="control-row full-width">
+                    <label class="control-label">Align Items Centering (Vertical)</label>
+                    <select class="control-select" data-style="alignItems">
+                      <option value="">Default</option>
+                      <option value="flex-start">Top Align</option>
+                      <option value="center">Middle Align</option>
+                      <option value="flex-end">Bottom Align</option>
+                      <option value="stretch">Stretch to fill height</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div> <!-- End of inspector-content -->
-      </div> <!-- End of tab-styles -->
 
-      <!-- TAB 2: LAYERS TREE -->
-      <div class="tab-content" id="tab-layers" style="padding: 16px 20px; overflow-y: auto;">
-        <div id="layers-tree-container">
-          <div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px 0;">
-            Select an element on the canvas to see its structural layers
+            <!-- Collapsible Layer Depth (z-index) (Collapsed by default) -->
+            <div class="inspector-section collapsed">
+              <div class="section-header">
+                <h4 class="section-title">Layer Depth Placement</h4>
+                <span class="section-chevron">▼</span>
+              </div>
+              <div class="section-body">
+                <div class="layer-depth-grid">
+                  <button class="depth-btn" id="depth-btn-front" title="Bring this item to the absolute front of the screen">Bring to Front</button>
+                  <button class="depth-btn" id="depth-btn-forward" title="Move this item one layer forward">Bring Forward</button>
+                  <button class="depth-btn" id="depth-btn-backward" title="Move this item one layer backward">Send Backward</button>
+                  <button class="depth-btn" id="depth-btn-back" title="Send this item to the absolute back of the screen">Send to Back</button>
+                </div>
+              </div>
+            </div>
+
+          </div> <!-- End of inspector-content -->
+        </div> <!-- End of tab-styles -->
+
+        <!-- TAB 2: LAYERS TREE -->
+        <div class="tab-content" id="tab-layers" style="padding: 16px 20px; overflow-y: auto;">
+          <div id="layers-tree-container">
+            <div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px 0;">
+              Select an item on the screen to view its hierarchy
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Inspector Actions -->
+        <!-- Inspector Actions -->
         <div class="inspector-footer">
           <div class="btn-row">
-            <button class="btn btn-secondary" id="inspector-cancel-btn">Cancel</button>
+            <button class="btn btn-secondary" id="inspector-cancel-btn">Discard</button>
             <button class="btn btn-primary" id="inspector-save-btn">Save Changes</button>
           </div>
-          <button class="btn btn-danger" id="inspector-reset-btn">Reset All Page Edits</button>
+          <button class="btn btn-danger" id="inspector-reset-btn">Reset All Edits</button>
         </div>
       </div>
 
@@ -684,6 +699,66 @@ export class ShadowUI {
       });
     }
 
+    // Global Font Input Trigger
+    const globalFontInput = this.shadowRoot.getElementById('canvas-global-font-input');
+    if (globalFontInput) {
+      globalFontInput.addEventListener('input', (e) => {
+        const val = e.target.value.trim();
+        if (this.callbacks.onGlobalFontChange) {
+          this.callbacks.onGlobalFontChange(val);
+        }
+      });
+    }
+
+    // Layer Placement Depth Actions (z-index)
+    const btnFront = this.shadowRoot.getElementById('depth-btn-front');
+    const btnForward = this.shadowRoot.getElementById('depth-btn-forward');
+    const btnBackward = this.shadowRoot.getElementById('depth-btn-backward');
+    const btnBack = this.shadowRoot.getElementById('depth-btn-back');
+
+    if (btnFront) {
+      btnFront.addEventListener('click', () => {
+        if (this.callbacks.onStyleChange && this.selectedElement) {
+          this.callbacks.onStyleChange('position', 'relative', this.selectedElement);
+          this.callbacks.onStyleChange('zIndex', '9999', this.selectedElement);
+          this.showToast('Brought item to absolute front', 'success');
+        }
+      });
+    }
+    if (btnForward) {
+      btnForward.addEventListener('click', () => {
+        if (this.callbacks.onStyleChange && this.selectedElement) {
+          const comp = window.getComputedStyle(this.selectedElement);
+          const currentZ = parseInt(comp.zIndex) || 0;
+          const nextZ = currentZ + 1;
+          this.callbacks.onStyleChange('position', 'relative', this.selectedElement);
+          this.callbacks.onStyleChange('zIndex', String(nextZ), this.selectedElement);
+          this.showToast(`Brought item forward (layer depth: ${nextZ})`, 'info');
+        }
+      });
+    }
+    if (btnBackward) {
+      btnBackward.addEventListener('click', () => {
+        if (this.callbacks.onStyleChange && this.selectedElement) {
+          const comp = window.getComputedStyle(this.selectedElement);
+          const currentZ = parseInt(comp.zIndex) || 0;
+          const nextZ = currentZ - 1;
+          this.callbacks.onStyleChange('position', 'relative', this.selectedElement);
+          this.callbacks.onStyleChange('zIndex', String(nextZ), this.selectedElement);
+          this.showToast(`Sent item backward (layer depth: ${nextZ})`, 'info');
+        }
+      });
+    }
+    if (btnBack) {
+      btnBack.addEventListener('click', () => {
+        if (this.callbacks.onStyleChange && this.selectedElement) {
+          this.callbacks.onStyleChange('position', 'relative', this.selectedElement);
+          this.callbacks.onStyleChange('zIndex', '-1', this.selectedElement);
+          this.showToast('Sent item to absolute back', 'danger');
+        }
+      });
+    }
+
     // Code Modal OK / Close
     const closeModal = () => this.modalOverlay.classList.remove('open');
     this.shadowRoot.getElementById('modal-close-btn').addEventListener('click', closeModal);
@@ -713,7 +788,7 @@ export class ShadowUI {
           }
         }
         
-        // Sync color previews
+        // Color input hex sync
         if (input.type === 'color') {
           const syncInput = this.shadowRoot.querySelector(`[data-style-sync="${prop}"]`);
           if (syncInput) syncInput.value = val;
@@ -813,10 +888,10 @@ export class ShadowUI {
   setBadgeState(isActive) {
     if (isActive) {
       this.badge.classList.add('active');
-      this.badge.querySelector('.badge-text').textContent = 'Canvas Active';
+      this.badge.querySelector('.badge-text').textContent = 'Visual Active';
     } else {
       this.badge.classList.remove('active');
-      this.badge.querySelector('.badge-text').textContent = 'Canvas Mode';
+      this.badge.querySelector('.badge-text').textContent = 'Visual Editor';
       this.closeInspector();
       this.hideOverlays();
     }
@@ -838,7 +913,7 @@ export class ShadowUI {
     this.hoverOverlay.style.display = 'none';
   }
 
-  showSelection(rect, name) {
+  showSelection(rect, name, el) {
     if (!rect) return;
     this.selectionOverlay.style.display = 'block';
     this.selectionOverlay.style.top = `${rect.top}px`;
@@ -849,9 +924,11 @@ export class ShadowUI {
     
     this.selectionOverlay.querySelector('.overlay-label').textContent = name;
     this.selectionOverlay.querySelector('.dimension-label').textContent = `${Math.round(rect.originalWidth)}px × ${Math.round(rect.originalHeight)}px`;
+    
+    this.updateQuickPopover(el);
   }
 
-  updateSelectionRect(rect) {
+  updateSelectionRect(rect, el) {
     if (!rect) return;
     this.selectionOverlay.style.top = `${rect.top}px`;
     this.selectionOverlay.style.left = `${rect.left}px`;
@@ -860,10 +937,13 @@ export class ShadowUI {
     this.selectionOverlay.style.borderRadius = rect.borderRadius || '0px';
     
     this.selectionOverlay.querySelector('.dimension-label').textContent = `${Math.round(rect.originalWidth)}px × ${Math.round(rect.originalHeight)}px`;
+    
+    this.updateQuickPopover(el);
   }
 
   hideSelection() {
     this.selectionOverlay.style.display = 'none';
+    this.updateQuickPopover(null);
   }
 
   hideOverlays() {
@@ -879,6 +959,14 @@ export class ShadowUI {
     const textContentInput = this.shadowRoot.getElementById('inspector-text-content');
     if (textContentInput) {
       textContentInput.value = textContent;
+    }
+    
+    // Fill global font family field if body has one
+    const bodySelector = 'body';
+    const bodyStyles = window.canvasDraftChanges?.[bodySelector]?.styles || window.canvasSavedModifications?.[bodySelector]?.styles;
+    const globalFontInput = this.shadowRoot.getElementById('canvas-global-font-input');
+    if (globalFontInput) {
+      globalFontInput.value = bodyStyles?.fontFamily || '';
     }
     
     this.inspector.classList.add('open');
@@ -919,18 +1007,15 @@ export class ShadowUI {
         if (input.type === 'number') {
           input.value = parseFloat(val) || '';
         } else if (input.type === 'color') {
-          // Parse rgb/rgba/hex to hex for native input
           const hex = rgbToHex(val) || '#000000';
           input.value = hex;
           input.parentElement.style.backgroundColor = val;
           
-          // Sync text input
           const syncInput = this.shadowRoot.querySelector(`[data-style-sync="${prop}"]`);
           if (syncInput) syncInput.value = val;
         } else if (input.tagName === 'SELECT') {
           input.value = val;
         } else if (input.classList.contains('align-btn')) {
-          // Align buttons are handled differently
           if (input.dataset.val === val) {
             input.classList.add('active');
           }
@@ -938,34 +1023,26 @@ export class ShadowUI {
           input.value = val;
         }
       });
-
-      // Special handling for text align button state
-      if (prop === 'textAlign') {
-        const alignBtn = this.shadowRoot.querySelector(`.align-btn[data-val="${val}"]`);
-        if (alignBtn) alignBtn.classList.add('active');
-      }
     });
   }
 
-  showCodeExport(cssCode) {
-    const codeBox = this.shadowRoot.getElementById('modal-css-code');
-    codeBox.textContent = cssCode;
-    this.modalOverlay.classList.add('open');
-  }
-
-  showToast(message, type = 'info') {
+  showToast(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `canvas-toast toast-${type}`;
-    toast.textContent = message;
     
+    let emoji = '⚡';
+    if (type === 'success') emoji = '✅';
+    if (type === 'danger') emoji = '🚨';
+    if (type === 'info') emoji = 'ℹ️';
+    
+    toast.innerHTML = `<span>${emoji}</span> <span>${message}</span>`;
     this.toastContainer.appendChild(toast);
     
     setTimeout(() => {
-      toast.style.animation = 'none'; // reset animation
+      toast.style.animation = 'none'; 
       toast.style.opacity = '1';
       toast.style.transform = 'translateY(0)';
       
-      // Animate out
       setTimeout(() => {
         toast.style.transition = 'all 0.3s ease';
         toast.style.opacity = '0';
@@ -981,7 +1058,7 @@ export class ShadowUI {
     
     if (!this.selectedElement) {
       container.innerHTML = `<div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px 0;">
-        Select an element on the canvas to see its structural layers
+        Select an item on the screen to view its hierarchy
       </div>`;
       return;
     }
@@ -1000,7 +1077,6 @@ export class ShadowUI {
     // 2. Sibling Nodes (including Self)
     if (parent) {
       Array.from(parent.children).forEach(sib => {
-        // Skip editor root if it's placed under same parent
         if (sib.id === 'canvas-editor-root') return;
         
         if (sib === this.selectedElement) {
@@ -1087,6 +1163,167 @@ export class ShadowUI {
     
     return node;
   }
+
+  updateQuickPopover(el) {
+    const popover = this.shadowRoot.getElementById('canvas-quick-popover');
+    if (!popover) return;
+    
+    if (!el) {
+      popover.style.display = 'none';
+      return;
+    }
+    
+    popover.style.display = 'flex';
+    
+    const tag = el.tagName.toLowerCase();
+    const computed = window.getComputedStyle(el);
+    
+    // Determine context category
+    let type = 'container';
+    if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'strong', 'em', 'li'].includes(tag)) {
+      type = 'text';
+    } else if (tag === 'img') {
+      type = 'image';
+    } else if (tag === 'button' || (tag === 'a' && el.classList.contains('btn')) || el.classList.contains('button')) {
+      type = 'button';
+    } else if (tag === 'a') {
+      type = 'link';
+    }
+    
+    let html = '';
+    
+    if (type === 'text') {
+      html = `
+        <div class="popover-header">Quick Text Settings</div>
+        <div class="popover-row">
+          <label class="popover-label">Text Content</label>
+          <input type="text" class="control-input popover-text-input" value="${el.textContent.trim()}" placeholder="Change text...">
+        </div>
+        <div class="popover-row">
+          <label class="popover-label">Text Size (Pixels)</label>
+          <input type="number" class="control-input" data-style="fontSize" value="${parseInt(computed.fontSize) || 16}">
+        </div>
+        <div class="popover-row">
+          <label class="popover-label">Text Color</label>
+          <div class="color-picker-row">
+            <div class="color-preview-box" style="background-color: ${computed.color};">
+              <input type="color" class="color-native-input" data-style="color" value="${cssColorToHex(computed.color)}">
+            </div>
+            <input type="text" class="control-input color-text-input" data-style-sync="color" value="${computed.color}">
+          </div>
+        </div>
+      `;
+    } else if (type === 'image') {
+      html = `
+        <div class="popover-header">Quick Image Settings</div>
+        <div class="popover-row">
+          <label class="popover-label">Image Web URL (Src)</label>
+          <input type="text" class="control-input popover-image-src" value="${el.src || ''}" placeholder="Paste URL here...">
+        </div>
+        <div class="popover-row">
+          <label class="popover-label">Corner Smoothness</label>
+          <input type="text" class="control-input" data-style="borderRadius" value="${computed.borderRadius || '0px'}">
+        </div>
+      `;
+    } else if (type === 'button') {
+      html = `
+        <div class="popover-header">Quick Button Settings</div>
+        <div class="popover-row">
+          <label class="popover-label">Button Label</label>
+          <input type="text" class="control-input popover-text-input" value="${el.textContent.trim()}" placeholder="Change button text...">
+        </div>
+        <div class="popover-row">
+          <label class="popover-label">Link Destination (URL)</label>
+          <input type="text" class="control-input popover-link-href" value="${el.getAttribute('href') || ''}" placeholder="e.g. /contact or https://...">
+        </div>
+        <div class="popover-row">
+          <label class="popover-label">Background Color</label>
+          <div class="color-picker-row">
+            <div class="color-preview-box" style="background-color: ${computed.backgroundColor};">
+              <input type="color" class="color-native-input" data-style="backgroundColor" value="${cssColorToHex(computed.backgroundColor)}">
+            </div>
+            <input type="text" class="control-input color-text-input" data-style-sync="backgroundColor" value="${computed.backgroundColor}">
+          </div>
+        </div>
+      `;
+    } else if (type === 'link') {
+      html = `
+        <div class="popover-header">Quick Link Settings</div>
+        <div class="popover-row">
+          <label class="popover-label">Link Text</label>
+          <input type="text" class="control-input popover-text-input" value="${el.textContent.trim()}" placeholder="Change link text...">
+        </div>
+        <div class="popover-row">
+          <label class="popover-label">Link Destination (URL)</label>
+          <input type="text" class="control-input popover-link-href" value="${el.getAttribute('href') || ''}" placeholder="e.g. /about or https://...">
+        </div>
+      `;
+    } else {
+      // Container
+      html = `
+        <div class="popover-header">Quick Block Settings</div>
+        <div class="popover-row">
+          <label class="popover-label">Corner Smoothness</label>
+          <input type="text" class="control-input" data-style="borderRadius" value="${computed.borderRadius || '0px'}">
+        </div>
+        <div class="popover-row">
+          <label class="popover-label">Background Color</label>
+          <div class="color-picker-row">
+            <div class="color-preview-box" style="background-color: ${computed.backgroundColor};">
+              <input type="color" class="color-native-input" data-style="backgroundColor" value="${cssColorToHex(computed.backgroundColor)}">
+            </div>
+            <input type="text" class="control-input color-text-input" data-style-sync="backgroundColor" value="${computed.backgroundColor}">
+          </div>
+        </div>
+      `;
+    }
+    
+    popover.innerHTML = html;
+    
+    // Bind specific popover event listeners
+    const textInput = popover.querySelector('.popover-text-input');
+    if (textInput) {
+      textInput.addEventListener('input', (e) => {
+        const val = e.target.value;
+        if (el.children.length === 0) {
+          el.textContent = val;
+        } else {
+          el.innerHTML = val;
+        }
+        
+        const sidebarText = this.shadowRoot.getElementById('inspector-text-content');
+        if (sidebarText) sidebarText.value = val;
+        
+        if (this.callbacks.onTextChange) {
+          this.callbacks.onTextChange(val);
+        }
+      });
+    }
+    
+    const hrefInput = popover.querySelector('.popover-link-href');
+    if (hrefInput) {
+      hrefInput.addEventListener('input', (e) => {
+        const val = e.target.value;
+        el.setAttribute('href', val);
+        if (this.callbacks.onStyleChange) {
+          this.callbacks.onStyleChange('href', val, el);
+        }
+      });
+    }
+    
+    const srcInput = popover.querySelector('.popover-image-src');
+    if (srcInput) {
+      srcInput.addEventListener('input', (e) => {
+        const val = e.target.value;
+        el.src = val;
+        if (this.callbacks.onStyleChange) {
+          this.callbacks.onStyleChange('src', val, el);
+        }
+      });
+    }
+    
+    this.cacheInputs();
+  }
 }
 
 // Helper to convert RGB styles to Hex
@@ -1099,7 +1336,7 @@ function rgbToHex(rgbStr) {
   if (!match) return null;
   
   const alpha = match[4] !== undefined ? parseFloat(match[4]) : 1;
-  if (alpha === 0) return '#ffffff'; // Fallback for native picker
+  if (alpha === 0) return '#ffffff'; 
   
   const r = parseInt(match[1]).toString(16).padStart(2, '0');
   const g = parseInt(match[2]).toString(16).padStart(2, '0');

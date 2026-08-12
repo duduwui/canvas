@@ -19,9 +19,13 @@ export class CanvasEditor {
     
     // Store draft changes in this session before Save/Cancel
     this.draftChanges = {};
+    this.copiedAppearance = null;
+    window.canvasDraftChanges = this.draftChanges;
+    window.canvasSavedModifications = getPageModifications();
     
     // Bind event handlers
     this.handleMouseMove = this.handleMouseMove.bind(this);
+    this.handleMouseDown = this.handleMouseDown.bind(this);
     this.handleMouseClick = this.handleMouseClick.bind(this);
     this.handleDragStart = this.handleDragStart.bind(this);
     this.handleDragMove = this.handleDragMove.bind(this);
@@ -65,7 +69,8 @@ export class CanvasEditor {
       onDeselect: () => this.deselectElement(),
       onSave: () => this.saveChanges(),
       onCancel: () => this.cancelChanges(),
-      onReset: () => this.resetAllChanges()
+      onReset: () => this.resetAllChanges(),
+      onGlobalFontChange: (val) => this.handleGlobalFontChange(val)
     });
 
     this.setupGlobalEvents();
@@ -112,6 +117,7 @@ export class CanvasEditor {
 
   addPageListeners() {
     document.addEventListener('mousemove', this.handleMouseMove, true);
+    document.addEventListener('mousedown', this.handleMouseDown, true);
     document.addEventListener('click', this.handleMouseClick, true);
     document.addEventListener('dblclick', this.handleDoubleClick, true);
     
@@ -125,6 +131,7 @@ export class CanvasEditor {
 
   removePageListeners() {
     document.removeEventListener('mousemove', this.handleMouseMove, true);
+    document.removeEventListener('mousedown', this.handleMouseDown, true);
     document.removeEventListener('click', this.handleMouseClick, true);
     document.removeEventListener('dblclick', this.handleDoubleClick, true);
   }
@@ -167,14 +174,55 @@ export class CanvasEditor {
     this.ui.showHover(overlayRect, name);
   }
 
+  handleMouseDown(e) {
+    if (!this.active) return;
+    if (this.isEditorElement(e.target)) return;
+
+    if (this.selectedElement && this.selectedElement.contains(e.target)) {
+      const startX = e.clientX;
+      const startY = e.clientY;
+      let hasDragged = false;
+      
+      const onMouseMove = (moveEvent) => {
+        const dist = Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY);
+        if (dist > 4) {
+          hasDragged = true;
+          document.removeEventListener('mousemove', onMouseMove, true);
+          document.removeEventListener('mouseup', onMouseUp, true);
+          
+          this.handleDragStart(e);
+        }
+      };
+      
+      const onMouseUp = (upEvent) => {
+        document.removeEventListener('mousemove', onMouseMove, true);
+        document.removeEventListener('mouseup', onMouseUp, true);
+        
+        if (!hasDragged) {
+          if (e.target !== this.selectedElement) {
+            this.selectElement(e.target);
+          }
+        }
+      };
+      
+      document.addEventListener('mousemove', onMouseMove, true);
+      document.addEventListener('mouseup', onMouseUp, true);
+      
+      e.preventDefault();
+      e.stopPropagation();
+    } else {
+      e.preventDefault();
+      e.stopPropagation();
+      this.selectElement(e.target);
+    }
+  }
+
   handleMouseClick(e) {
     if (!this.active) return;
     if (this.isEditorElement(e.target)) return;
 
     e.preventDefault();
     e.stopPropagation();
-
-    this.selectElement(e.target);
   }
 
   selectElement(el) {
@@ -185,6 +233,18 @@ export class CanvasEditor {
     this.selectedElement = el;
     this.selectedSelector = getUniqueSelector(el);
     
+    // Auto-dock sidebar based on element center
+    const rect = el.getBoundingClientRect();
+    const elementCenter = rect.left + rect.width / 2;
+    const viewportCenter = window.innerWidth / 2;
+    if (elementCenter > viewportCenter) {
+      this.ui.inspector.classList.remove('dock-right');
+      this.ui.inspector.classList.add('dock-left');
+    } else {
+      this.ui.inspector.classList.remove('dock-left');
+      this.ui.inspector.classList.add('dock-right');
+    }
+    
     // Page Scroll Locking
     this._originalOverflow = document.documentElement.style.overflow;
     document.documentElement.style.overflow = 'hidden';
@@ -193,7 +253,7 @@ export class CanvasEditor {
     const overlayRect = this.calculateOverlayRect(el);
     const name = `${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''}`;
     
-    this.ui.showSelection(overlayRect, name);
+    this.ui.showSelection(overlayRect, name, el);
     
     // Get and parse computed style properties
     const computed = window.getComputedStyle(el);
@@ -259,7 +319,7 @@ export class CanvasEditor {
   repositionOverlays() {
     if (!this.selectedElement) return;
     const overlayRect = this.calculateOverlayRect(this.selectedElement);
-    this.ui.updateSelectionRect(overlayRect);
+    this.ui.updateSelectionRect(overlayRect, this.selectedElement);
   }
 
   /* --- Text Editing Engine --- */
@@ -464,6 +524,52 @@ export class CanvasEditor {
           this.deselectElement();
           this.ui.showToast(`Deleted element`, 'danger');
         }
+        break;
+      }
+      case 'copy-style': {
+        const computed = window.getComputedStyle(el);
+        this.copiedAppearance = {
+          fontSize: computed.fontSize,
+          fontWeight: computed.fontWeight,
+          fontFamily: computed.fontFamily,
+          color: computed.color,
+          backgroundColor: computed.backgroundColor,
+          paddingTop: computed.paddingTop,
+          paddingRight: computed.paddingRight,
+          paddingBottom: computed.paddingBottom,
+          paddingLeft: computed.paddingLeft,
+          marginTop: computed.marginTop,
+          marginRight: computed.marginRight,
+          marginBottom: computed.marginBottom,
+          marginLeft: computed.marginLeft,
+          borderRadius: computed.borderRadius,
+          borderWidth: computed.borderWidth,
+          borderStyle: computed.borderStyle,
+          borderColor: computed.borderColor,
+          boxShadow: el.style.boxShadow || computed.boxShadow || ''
+        };
+        this.ui.showToast('Copied visual appearance styles!', 'success');
+        break;
+      }
+      case 'paste-style': {
+        if (!this.copiedAppearance) {
+          this.ui.showToast('No style copied yet. Select an item and copy first!', 'danger');
+          break;
+        }
+        Object.entries(this.copiedAppearance).forEach(([prop, val]) => {
+          this.handleStyleChange(prop, val, el);
+        });
+        
+        // Re-open inspector to sync new values
+        const styles = {};
+        Object.keys(this.copiedAppearance).forEach(k => {
+          styles[k] = el.style[k] || window.getComputedStyle(el)[k];
+        });
+        const textContent = el.children.length === 0 ? el.textContent.trim() : el.innerHTML.trim();
+        const name = `${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''}`;
+        this.ui.openInspector(name, styles, textContent, el);
+        
+        this.ui.showToast('Pasted styles onto selected item!', 'success');
         break;
       }
     }
@@ -752,5 +858,26 @@ export class CanvasEditor {
     });
     
     return cssString || '/* No style edits generated */';
+  }
+
+  handleGlobalFontChange(fontName) {
+    if (!fontName) return;
+    
+    // Set style override on document.body
+    document.body.style.fontFamily = fontName;
+    
+    // Record it in draft changes under 'body'
+    if (!this.draftChanges['body']) {
+      this.draftChanges['body'] = { styles: {}, text: undefined };
+    }
+    if (!this.draftChanges['body'].styles) {
+      this.draftChanges['body'].styles = {};
+    }
+    this.draftChanges['body'].styles['fontFamily'] = fontName;
+    
+    // Apply changes in case they save
+    applyModifications(this.draftChanges, true);
+    
+    this.ui.showToast(`Set global website font to "${fontName}"`, 'success');
   }
 }
