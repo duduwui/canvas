@@ -19,6 +19,8 @@ export class ShadowUI {
     // Form elements caching
     this.inputs = {};
     
+    this.selectedElement = null;
+    
     this.init();
   }
 
@@ -78,10 +80,6 @@ export class ShadowUI {
 
       <!-- Selection Overlay -->
       <div class="canvas-overlay canvas-selection-overlay">
-        <div class="overlay-label">div.selected</div>
-        <div class="dimension-label">0 × 0</div>
-        <div class="drag-handle" data-action="drag"></div>
-        
         <!-- Edge resize handles -->
         <div class="resize-handle t" data-handle="t"></div>
         <div class="resize-handle r" data-handle="r"></div>
@@ -93,6 +91,21 @@ export class ShadowUI {
         <div class="resize-handle tr" data-handle="tr"></div>
         <div class="resize-handle bl" data-handle="bl"></div>
         <div class="resize-handle br" data-handle="br"></div>
+
+        <!-- Floating tag label (serves as drag handle) -->
+        <div class="overlay-label" data-action="drag">div.selected</div>
+        
+        <!-- Quick Actions Canvas Toolbar -->
+        <div class="canvas-quick-toolbar">
+          <button class="quick-btn" data-action="parent" title="Select Parent">↑ Parent</button>
+          <button class="quick-btn" data-action="child" title="Select Child">↓ Child</button>
+          <button class="quick-btn" data-action="edit-text" title="Edit Text">✎ Edit</button>
+          <button class="quick-btn" data-action="visibility" title="Toggle Hide/Show">👁 Hide</button>
+          <button class="quick-btn" data-action="duplicate" title="Clone Element">❐ Clone</button>
+          <button class="quick-btn" data-action="delete" title="Delete Element" style="color: var(--danger-color);">🗑 Del</button>
+        </div>
+        
+        <div class="dimension-label">0 × 0</div>
       </div>
 
       <!-- Properties Inspector -->
@@ -104,8 +117,16 @@ export class ShadowUI {
             <button class="inspector-close" id="inspector-close-btn">×</button>
           </div>
         </div>
+
+        <!-- Tab Selector -->
+        <div class="inspector-tabs">
+          <button class="tab-btn active" data-tab="styles">Styles</button>
+          <button class="tab-btn" data-tab="layers">Layers</button>
+        </div>
         
-        <div class="inspector-content">
+        <!-- TAB 1: STYLES CONTROLS -->
+        <div class="tab-content active" id="tab-styles">
+          <div class="inspector-content">
           <!-- Collapsible Content -->
           <div class="inspector-section">
             <div class="section-header">
@@ -266,12 +287,36 @@ export class ShadowUI {
                 </div>
 
                 <div class="control-row full-width">
+                  <label class="control-label">
+                    Attach Font Files (.ttf, .woff, .woff2)
+                    <span class="info-icon" data-tip="Upload binary font files from your device to load them locally." data-example="Select my-font.ttf">ⓘ</span>
+                  </label>
+                  <div class="font-upload-row">
+                    <label class="custom-file-upload">
+                      <input type="file" id="canvas-font-file-input" accept=".ttf,.woff,.woff2" multiple style="display:none;">
+                      <span id="canvas-file-upload-btn-label">📁 Choose local font files...</span>
+                    </label>
+                    <div id="canvas-font-file-list" style="font-size: 10px; color: var(--text-muted); line-height: 1.3; margin-top: 4px;">No files chosen</div>
+                  </div>
+                </div>
+
+                <div class="control-row full-width">
                   <label class="control-label">Text Color</label>
                   <div class="color-picker-row">
                     <div class="color-preview-box" id="color-text-preview">
                       <input type="color" class="color-native-input" data-style="color">
                     </div>
                     <input type="text" class="control-input color-text-input" data-style-sync="color" placeholder="#000000">
+                  </div>
+                  <div class="color-swatches">
+                    <button class="swatch-btn swatch-transparent" data-color="transparent" title="Transparent"></button>
+                    <button class="swatch-btn" data-color="#ffffff" style="background-color: #ffffff;" title="White"></button>
+                    <button class="swatch-btn" data-color="#0f172a" style="background-color: #0f172a;" title="Slate"></button>
+                    <button class="swatch-btn" data-color="#6366f1" style="background-color: #6366f1;" title="Indigo"></button>
+                    <button class="swatch-btn" data-color="#06b6d4" style="background-color: #06b6d4;" title="Cyan"></button>
+                    <button class="swatch-btn" data-color="#10b981" style="background-color: #10b981;" title="Green"></button>
+                    <button class="swatch-btn" data-color="#ef4444" style="background-color: #ef4444;" title="Red"></button>
+                    <button class="swatch-btn" data-color="#f59e0b" style="background-color: #f59e0b;" title="Yellow"></button>
                   </div>
                 </div>
                 
@@ -425,6 +470,16 @@ export class ShadowUI {
                     </div>
                     <input type="text" class="control-input color-text-input" data-style-sync="backgroundColor" placeholder="transparent">
                   </div>
+                  <div class="color-swatches">
+                    <button class="swatch-btn swatch-transparent" data-color="transparent" title="Transparent"></button>
+                    <button class="swatch-btn" data-color="#ffffff" style="background-color: #ffffff;" title="White"></button>
+                    <button class="swatch-btn" data-color="#0f172a" style="background-color: #0f172a;" title="Slate"></button>
+                    <button class="swatch-btn" data-color="#6366f1" style="background-color: #6366f1;" title="Indigo"></button>
+                    <button class="swatch-btn" data-color="#06b6d4" style="background-color: #06b6d4;" title="Cyan"></button>
+                    <button class="swatch-btn" data-color="#10b981" style="background-color: #10b981;" title="Green"></button>
+                    <button class="swatch-btn" data-color="#ef4444" style="background-color: #ef4444;" title="Red"></button>
+                    <button class="swatch-btn" data-color="#f59e0b" style="background-color: #f59e0b;" title="Yellow"></button>
+                  </div>
                 </div>
                 
                 <div class="control-row">
@@ -448,9 +503,19 @@ export class ShadowUI {
               </div>
             </div>
           </div>
-        </div>
+        </div> <!-- End of inspector-content -->
+      </div> <!-- End of tab-styles -->
 
-        <!-- Inspector Actions -->
+      <!-- TAB 2: LAYERS TREE -->
+      <div class="tab-content" id="tab-layers" style="padding: 16px 20px; overflow-y: auto;">
+        <div id="layers-tree-container">
+          <div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px 0;">
+            Select an element on the canvas to see its structural layers
+          </div>
+        </div>
+      </div>
+
+      <!-- Inspector Actions -->
         <div class="inspector-footer">
           <div class="btn-row">
             <button class="btn btn-secondary" id="inspector-cancel-btn">Cancel</button>
@@ -548,6 +613,82 @@ export class ShadowUI {
       }
     });
 
+    // Tab Switches
+    this.shadowRoot.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.shadowRoot.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.shadowRoot.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        btn.classList.add('active');
+        const tabId = `tab-${btn.dataset.tab}`;
+        const tabContent = this.shadowRoot.getElementById(tabId);
+        if (tabContent) tabContent.classList.add('active');
+        
+        if (btn.dataset.tab === 'layers') {
+          this.updateLayersTree();
+        }
+      });
+    });
+
+    // Preset Swatches Clicking
+    this.shadowRoot.querySelectorAll('.swatch-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const parentRow = btn.closest('.control-row');
+        if (parentRow) {
+          const colorVal = btn.dataset.color;
+          const textInput = parentRow.querySelector('.color-text-input');
+          const colorInput = parentRow.querySelector('.color-native-input');
+          
+          if (textInput) {
+            textInput.value = colorVal;
+            textInput.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+          
+          if (colorInput && colorVal !== 'transparent') {
+            colorInput.value = colorVal;
+          }
+        }
+      });
+    });
+
+    // Local Fonts Upload
+    const fontFileInput = this.shadowRoot.getElementById('canvas-font-file-input');
+    const fontFileList = this.shadowRoot.getElementById('canvas-font-file-list');
+    if (fontFileInput) {
+      fontFileInput.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) {
+          fontFileList.textContent = 'No files chosen';
+          return;
+        }
+        
+        fontFileList.textContent = files.map(f => f.name).join(', ');
+        
+        if (this.callbacks.onLocalFontUpload) {
+          this.callbacks.onLocalFontUpload(files);
+        }
+      });
+    }
+
+    // Canvas Selection Quick Actions Toolbar click handling
+    const quickToolbar = this.shadowRoot.querySelector('.canvas-quick-toolbar');
+    if (quickToolbar) {
+      quickToolbar.addEventListener('click', (e) => {
+        const btn = e.target.closest('.quick-btn');
+        if (!btn) return;
+        
+        const action = btn.dataset.action;
+        if (this.callbacks.onQuickAction && this.selectedElement) {
+          this.callbacks.onQuickAction(action, this.selectedElement);
+        }
+      });
+    }
+
+    // Code Modal OK / Close
+    const closeModal = () => this.modalOverlay.classList.remove('open');
+    this.shadowRoot.getElementById('modal-close-btn').addEventListener('click', closeModal);
+    this.shadowRoot.getElementById('modal-ok-btn').addEventListener('click', closeModal);
+
     // Fade overlays on inspector hover
     this.inspector.addEventListener('mouseenter', () => {
       this.uiContainer.classList.add('canvas-inspector-hovered');
@@ -555,29 +696,6 @@ export class ShadowUI {
     this.inspector.addEventListener('mouseleave', () => {
       this.uiContainer.classList.remove('canvas-inspector-hovered');
     });
-
-    // Custom Font Import Handlers
-    const fontImportBtn = this.shadowRoot.getElementById('canvas-font-import-btn');
-    const fontImportUrl = this.shadowRoot.getElementById('canvas-font-import-url');
-    fontImportBtn.addEventListener('click', () => {
-      const url = fontImportUrl.value.trim();
-      if (url) {
-        if (this.callbacks.onFontImport) {
-          this.callbacks.onFontImport(url);
-        }
-      }
-    });
-    fontImportUrl.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        fontImportBtn.click();
-      }
-    });
-
-    // Code Modal OK / Close
-    const closeModal = () => this.modalOverlay.classList.remove('open');
-    this.shadowRoot.getElementById('modal-close-btn').addEventListener('click', closeModal);
-    this.shadowRoot.getElementById('modal-ok-btn').addEventListener('click', closeModal);
 
     // Dynamic Style Changes (Input elements)
     this.shadowRoot.addEventListener('input', (e) => {
@@ -753,7 +871,8 @@ export class ShadowUI {
     this.hideSelection();
   }
 
-  openInspector(elementName, currentStyles, textContent = '') {
+  openInspector(elementName, currentStyles, textContent = '', elementRef = null) {
+    this.selectedElement = elementRef;
     this.shadowRoot.getElementById('inspector-element-title').textContent = elementName;
     this.fillInspectorValues(currentStyles);
     
@@ -763,6 +882,12 @@ export class ShadowUI {
     }
     
     this.inspector.classList.add('open');
+    
+    // Automatically rebuild layers tree if layers tab is active
+    const activeTab = this.shadowRoot.querySelector('.tab-btn.active');
+    if (activeTab && activeTab.dataset.tab === 'layers') {
+      this.updateLayersTree();
+    }
   }
 
   closeInspector() {
@@ -848,6 +973,119 @@ export class ShadowUI {
         setTimeout(() => toast.remove(), 300);
       }, 2500);
     }, 10);
+  }
+
+  updateLayersTree() {
+    const container = this.shadowRoot.getElementById('layers-tree-container');
+    if (!container) return;
+    
+    if (!this.selectedElement) {
+      container.innerHTML = `<div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px 0;">
+        Select an element on the canvas to see its structural layers
+      </div>`;
+      return;
+    }
+    
+    container.innerHTML = '';
+    
+    const treeDiv = document.createElement('div');
+    treeDiv.className = 'layers-tree';
+    
+    // 1. Parent Node
+    const parent = this.selectedElement.parentElement;
+    if (parent && parent !== document.body && parent !== document.documentElement) {
+      treeDiv.appendChild(this.createLayerNodeElement(parent, 'parent'));
+    }
+    
+    // 2. Sibling Nodes (including Self)
+    if (parent) {
+      Array.from(parent.children).forEach(sib => {
+        // Skip editor root if it's placed under same parent
+        if (sib.id === 'canvas-editor-root') return;
+        
+        if (sib === this.selectedElement) {
+          treeDiv.appendChild(this.createLayerNodeElement(sib, 'selected'));
+        } else {
+          treeDiv.appendChild(this.createLayerNodeElement(sib, 'sibling'));
+        }
+      });
+    } else {
+      treeDiv.appendChild(this.createLayerNodeElement(this.selectedElement, 'selected'));
+    }
+    
+    // 3. Children Nodes
+    Array.from(this.selectedElement.children).forEach(child => {
+      if (child.id === 'canvas-editor-root') return;
+      treeDiv.appendChild(this.createLayerNodeElement(child, 'child'));
+    });
+    
+    container.appendChild(treeDiv);
+  }
+  
+  createLayerNodeElement(el, type) {
+    const node = document.createElement('div');
+    node.className = `layers-node ${type}-node ${type === 'selected' ? 'selected' : ''}`;
+    
+    const tag = el.tagName.toLowerCase();
+    const className = el.className ? `.${Array.from(el.classList).join('.')}` : '';
+    const cleanClassName = className.length > 18 ? className.substring(0, 18) + '...' : className;
+    
+    node.addEventListener('click', (e) => {
+      if (e.target.closest('.node-action-btn')) return;
+      if (this.callbacks.onLayerSelect) {
+        this.callbacks.onLayerSelect(el);
+      }
+    });
+    
+    let roleLabel = type;
+    if (type === 'selected') roleLabel = 'Active';
+    
+    node.innerHTML = `
+      <div class="node-info">
+        <span class="node-tag">${tag}</span>
+        <span class="node-class" title="${className}">${cleanClassName}</span>
+        <span class="node-type-label">${roleLabel}</span>
+      </div>
+      <div class="node-actions">
+        <button class="node-action-btn toggle-visibility" title="Toggle Visibility">👁</button>
+        <button class="node-action-btn delete" title="Delete Element" style="color: var(--danger-color);">🗑</button>
+      </div>
+    `;
+    
+    // Toggle Visibility
+    node.querySelector('.toggle-visibility').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const currentDisplay = el.style.display || window.getComputedStyle(el).display;
+      const nextDisplay = currentDisplay === 'none' ? 'block' : 'none';
+      el.style.display = nextDisplay;
+      
+      if (this.callbacks.onStyleChange) {
+        this.callbacks.onStyleChange('display', nextDisplay, el);
+      }
+      
+      this.showToast(`Element visibility set to ${nextDisplay}`, 'info');
+      this.updateLayersTree();
+    });
+    
+    // Delete
+    node.querySelector('.delete').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (confirm(`Are you sure you want to delete this <${tag}> element?`)) {
+        el.style.display = 'none';
+        if (this.callbacks.onStyleChange) {
+          this.callbacks.onStyleChange('display', 'none', el);
+        }
+        this.showToast(`Deleted <${tag}> element`, 'danger');
+        
+        if (type === 'selected' && this.callbacks.onDeselect) {
+          this.callbacks.onDeselect();
+        } else {
+          this.updateLayersTree();
+        }
+      }
+    });
+    
+    return node;
   }
 }
 

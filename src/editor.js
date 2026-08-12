@@ -6,7 +6,8 @@ import {
   getPageModifications, 
   savePageModifications, 
   clearPageModifications,
-  injectFontStylesheet
+  injectFontStylesheet,
+  saveFontToDB
 } from './persistence.js';
 
 export class CanvasEditor {
@@ -55,9 +56,13 @@ export class CanvasEditor {
     // Initialize Shadow UI
     this.ui = new ShadowUI({
       onToggleActive: () => this.toggleActive(),
-      onStyleChange: (prop, val) => this.handleStyleChange(prop, val),
+      onStyleChange: (prop, val, el) => this.handleStyleChange(prop, val, el),
       onTextChange: (text) => this.handleTextChange(text),
       onFontImport: (url) => this.handleFontImport(url),
+      onLocalFontUpload: (files) => this.handleLocalFontUpload(files),
+      onQuickAction: (action, el) => this.handleQuickAction(action, el),
+      onLayerSelect: (el) => this.selectElement(el),
+      onDeselect: () => this.deselectElement(),
       onSave: () => this.saveChanges(),
       onCancel: () => this.cancelChanges(),
       onReset: () => this.resetAllChanges()
@@ -227,7 +232,7 @@ export class CanvasEditor {
     
     // Open Inspector panel
     const textContent = el.children.length === 0 ? el.textContent.trim() : el.innerHTML.trim();
-    this.ui.openInspector(name, styles, textContent);
+    this.ui.openInspector(name, styles, textContent, el);
   }
 
   deselectElement() {
@@ -245,6 +250,7 @@ export class CanvasEditor {
       
       this.selectedElement = null;
       this.selectedSelector = '';
+      this.ui.selectedElement = null; // Sync UI
     }
     this.ui.hideSelection();
     this.ui.closeInspector();
@@ -387,6 +393,123 @@ export class CanvasEditor {
       console.error('Canvas: Failed to import font', e);
       this.ui.showToast('Failed to load custom font.', 'danger');
     }
+  }
+
+  handleQuickAction(action, el) {
+    if (!el) return;
+    
+    switch (action) {
+      case 'parent': {
+        const parent = el.parentElement;
+        if (parent && parent !== document.body && parent !== document.documentElement) {
+          this.selectElement(parent);
+          this.ui.showToast(`Selected parent: <${parent.tagName.toLowerCase()}>`, 'info');
+        } else {
+          this.ui.showToast('No higher parent element select-eligible', 'info');
+        }
+        break;
+      }
+      case 'child': {
+        const child = el.firstElementChild;
+        if (child && child.id !== 'canvas-editor-root') {
+          this.selectElement(child);
+          this.ui.showToast(`Selected child: <${child.tagName.toLowerCase()}>`, 'info');
+        } else {
+          this.ui.showToast('No select-eligible child elements found', 'info');
+        }
+        break;
+      }
+      case 'edit-text': {
+        this.handleDoubleClick({ target: el, preventDefault: () => {} });
+        this.ui.showToast('Inline editing mode activated!', 'info');
+        break;
+      }
+      case 'visibility': {
+        const currentDisplay = el.style.display || window.getComputedStyle(el).display;
+        const nextDisplay = currentDisplay === 'none' ? 'block' : 'none';
+        el.style.display = nextDisplay;
+        this.handleStyleChange('display', nextDisplay, el);
+        
+        this.ui.showToast(`Element visibility set to ${nextDisplay}`, 'info');
+        
+        if (nextDisplay === 'none') {
+          this.deselectElement();
+        } else {
+          this.repositionOverlays();
+        }
+        break;
+      }
+      case 'duplicate': {
+        const clone = el.cloneNode(true);
+        if (clone.id) {
+          clone.id = `${clone.id}-clone-${Date.now().toString().slice(-4)}`;
+        }
+        el.parentNode.insertBefore(clone, el.nextSibling);
+        
+        // Register style and text draft changes for the clone
+        const cloneSelector = getUniqueSelector(clone);
+        this.draftChanges[cloneSelector] = {
+          styles: { display: clone.style.display || '' },
+          text: clone.children.length === 0 ? clone.textContent : clone.innerHTML
+        };
+        
+        this.ui.showToast(`Duplicated <${el.tagName.toLowerCase()}> element`, 'success');
+        this.selectElement(clone);
+        break;
+      }
+      case 'delete': {
+        if (confirm(`Are you sure you want to delete this <${el.tagName.toLowerCase()}> element?`)) {
+          el.style.display = 'none';
+          this.handleStyleChange('display', 'none', el);
+          this.deselectElement();
+          this.ui.showToast(`Deleted element`, 'danger');
+        }
+        break;
+      }
+    }
+  }
+
+  handleLocalFontUpload(files) {
+    if (!files || files.length === 0) return;
+    
+    files.forEach(file => {
+      const fontName = file.name.split('.')[0].replace(/[^a-zA-Z0-9]/g, '-');
+      const reader = new FileReader();
+      
+      reader.onload = async (e) => {
+        const arrayBuffer = e.target.result;
+        try {
+          // 1. Load FontFace via Font Loading API
+          const fontFace = new FontFace(fontName, arrayBuffer);
+          await fontFace.load();
+          document.fonts.add(fontFace);
+          
+          // 2. Save binary to IndexedDB
+          await saveFontToDB(fontName, arrayBuffer);
+          
+          // 3. Apply style family override to selected element
+          this.handleStyleChange('fontFamily', fontName);
+          
+          // 4. Sync typography text field in inspector
+          const fontFamilyInput = this.ui.shadowRoot.querySelector('input[data-style="fontFamily"]');
+          if (fontFamilyInput) {
+            fontFamilyInput.value = fontName;
+          }
+          
+          this.ui.showToast(`Custom font "${fontName}" uploaded & applied!`, 'success');
+          
+          // Refresh layers tree if visible
+          if (this.selectedElement) {
+            this.ui.updateLayersTree();
+          }
+        } catch (err) {
+          console.error(`Failed to register custom font file: ${file.name}`, err);
+          this.ui.showToast(`Failed to parse font file: ${file.name}`, 'danger');
+        }
+      };
+      
+      reader.readAsArrayBuffer(file);
+    });
   }
 
   /* --- Drag Engine --- */
@@ -541,16 +664,19 @@ export class CanvasEditor {
   }
 
   /* --- Properties Inspector Changes --- */
-  handleStyleChange(prop, val) {
-    if (!this.selectedElement) return;
+  handleStyleChange(prop, val, targetEl = this.selectedElement) {
+    if (!targetEl) return;
     
-    this.selectedElement.style[prop] = val;
-    this.recordStyleChange(prop, val);
-    this.repositionOverlays();
+    targetEl.style[prop] = val;
+    this.recordStyleChange(prop, val, targetEl);
+    
+    if (targetEl === this.selectedElement) {
+      this.repositionOverlays();
+    }
   }
 
-  recordStyleChange(prop, val) {
-    const selector = this.selectedSelector;
+  recordStyleChange(prop, val, targetEl = this.selectedElement) {
+    const selector = getUniqueSelector(targetEl);
     if (!selector) return;
 
     if (!this.draftChanges[selector]) {

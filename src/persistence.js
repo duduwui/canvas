@@ -163,6 +163,9 @@ export function initSavedModifications() {
     });
   }
 
+  // Load binary font attachments from IndexedDB
+  loadFontsFromDB();
+
   applyModifications(pageMods, false);
 }
 
@@ -176,4 +179,63 @@ export function clearPageModifications() {
   const all = getAllSavedModifications();
   delete all[getPageKey()];
   localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+}
+
+/* --- IndexedDB Local Font Binary DB Storage --- */
+const DB_NAME = 'CanvasFontDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'fonts';
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: 'name' });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function saveFontToDB(name, dataBuffer) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    store.put({ name, data: dataBuffer });
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function getFontsFromDB() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const store = tx.objectStore(STORE_NAME);
+    const request = store.getAll();
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function loadFontsFromDB() {
+  try {
+    const fonts = await getFontsFromDB();
+    for (const font of fonts) {
+      try {
+        const fontFace = new FontFace(font.name, font.data);
+        await fontFace.load();
+        document.fonts.add(fontFace);
+        console.log(`Canvas: Local font "${font.name}" successfully registered from DB!`);
+      } catch (err) {
+        console.error(`Canvas: Failed to register font "${font.name}" from DB`, err);
+      }
+    }
+  } catch (e) {
+    console.warn('Canvas: Could not access local Font DB (IndexedDB)', e);
+  }
 }

@@ -16,19 +16,22 @@
 
 :host {
   --primary-color: #6366f1; /* Indigo */
-  --primary-glow: rgba(99, 102, 241, 0.5);
+  --primary-glow: rgba(99, 102, 241, 0.4);
   --accent-color: #06b6d4; /* Cyan */
-  --accent-glow: rgba(6, 182, 212, 0.5);
+  --accent-glow: rgba(6, 182, 212, 0.4);
   --danger-color: #ef4444; /* Red */
   --success-color: #10b981; /* Emerald */
   --font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --bg-glass: rgba(15, 23, 42, 0.85); /* Dark slate glass */
-  --bg-glass-hover: rgba(15, 23, 42, 0.92);
-  --border-glass: rgba(255, 255, 255, 0.08);
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --shadow-premium: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  
+  /* Liquid Glass theme variables */
+  --bg-glass: rgba(255, 255, 255, 0.08); /* Frosted liquid glass */
+  --bg-glass-hover: rgba(255, 255, 255, 0.12);
+  --border-glass: rgba(255, 255, 255, 0.15);
+  
+  --text-primary: #ffffff;
+  --text-secondary: #f1f5f9;
+  --text-muted: #cbd5e1;
+  --shadow-premium: 0 8px 32px 0 rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
   
   font-family: var(--font-family);
   color: var(--text-primary);
@@ -43,7 +46,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: var(--bg-glass);
+  background: rgba(15, 23, 42, 0.8);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-glass);
@@ -57,7 +60,7 @@
 
 .canvas-badge:hover {
   transform: translateY(-2px);
-  background: var(--bg-glass-hover);
+  background: rgba(15, 23, 42, 0.9);
   border-color: rgba(99, 102, 241, 0.3);
   box-shadow: var(--shadow-premium), 0 0 15px 3px rgba(99, 102, 241, 0.2);
 }
@@ -91,6 +94,7 @@
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.5px;
+  color: #ffffff;
 }
 
 .canvas-badge.active {
@@ -122,15 +126,7 @@
   border: 2px solid var(--accent-color);
   background: rgba(6, 182, 212, 0.01);
   box-shadow: 0 0 15px rgba(6, 182, 212, 0.25);
-  pointer-events: auto; /* Allow handle interaction */
-}
-
-/* Fade out selection and hover overlays when user is actively using the inspector */
-.canvas-inspector-hovered .canvas-selection-overlay {
-  opacity: 0.15;
-}
-.canvas-inspector-hovered .canvas-hover-overlay {
-  opacity: 0;
+  pointer-events: none; /* Let pointer events pass right through to child components! */
 }
 
 /* Overlay Labels */
@@ -146,8 +142,10 @@
   border-radius: 4px;
   white-space: nowrap;
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  pointer-events: none;
+  pointer-events: auto; /* Active for tag label dragging */
+  cursor: move;
   font-family: var(--font-family);
+  user-select: none;
 }
 
 .canvas-selection-overlay .overlay-label {
@@ -169,6 +167,14 @@
   pointer-events: none;
 }
 
+/* Fade out selection and hover overlays when user is actively using the inspector */
+.canvas-inspector-hovered .canvas-selection-overlay {
+  opacity: 0.15;
+}
+.canvas-inspector-hovered .canvas-hover-overlay {
+  opacity: 0;
+}
+
 /* --- Resizing Handles --- */
 .resize-handle {
   position: absolute;
@@ -178,6 +184,7 @@
   border: 2px solid var(--accent-color);
   border-radius: 50%;
   z-index: 100;
+  pointer-events: auto; /* Make handles grabable */
 }
 
 /* Corner Handles */
@@ -192,26 +199,63 @@
 .resize-handle.l { left: -6px; top: calc(50% - 5px); cursor: ew-resize; height: 12px; width: 6px; border-radius: 3px; }
 .resize-handle.r { right: -6px; top: calc(50% - 5px); cursor: ew-resize; height: 12px; width: 6px; border-radius: 3px; }
 
-/* Drag Overlay overlay */
+/* Drag Overlay overlay - disabled, using Tag Label instead */
 .drag-handle {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  cursor: move;
-  z-index: 99;
+  display: none;
 }
 
-/* --- Property Inspector Panel --- */
+/* --- Canvas Quick Actions Toolbar --- */
+.canvas-quick-toolbar {
+  position: absolute;
+  top: -38px;
+  right: 0;
+  display: flex;
+  gap: 4px;
+  background: rgba(15, 23, 42, 0.85); /* Slightly darker slate to pop visually */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 4px;
+  box-shadow: var(--shadow-premium);
+  pointer-events: auto;
+  z-index: 100000;
+}
+
+.canvas-quick-toolbar .quick-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+  font-family: var(--font-family);
+}
+
+.canvas-quick-toolbar .quick-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--accent-color);
+}
+
+.canvas-quick-toolbar .quick-btn:active {
+  transform: translateY(1px);
+}
+
+/* --- Property Inspector Panel (Liquid Glass) --- */
 .canvas-inspector {
   position: fixed;
   top: 20px;
   width: 360px;
   height: calc(100vh - 40px);
   background: var(--bg-glass);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
+  backdrop-filter: blur(35px) saturate(180%);
+  -webkit-backdrop-filter: blur(35px) saturate(180%);
   border: 1px solid var(--border-glass);
   border-radius: 16px;
   box-shadow: var(--shadow-premium);
@@ -251,6 +295,7 @@
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .inspector-title {
@@ -258,9 +303,7 @@
   font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.5px;
-  background: linear-gradient(to right, var(--text-primary), var(--text-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-primary);
   max-width: 220px;
   white-space: nowrap;
   overflow: hidden;
@@ -283,7 +326,7 @@
 }
 
 .inspector-action-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
 }
 
@@ -303,11 +346,58 @@
 }
 
 .inspector-close:hover {
-  background: rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.08);
   color: var(--text-primary);
 }
 
-/* Inspector Content */
+/* --- Inspector Tabs --- */
+.inspector-tabs {
+  display: flex;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--border-glass);
+  flex-shrink: 0;
+}
+
+.inspector-tabs .tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.25s;
+  border-bottom: 2px solid transparent;
+}
+
+.inspector-tabs .tab-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.inspector-tabs .tab-btn.active {
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Tab contents and toggle heights */
+.tab-content {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.tab-content.active {
+  display: flex;
+}
+
+/* Inspector Content layout */
 .inspector-content {
   flex: 1;
   overflow-y: auto;
@@ -323,7 +413,7 @@
 .inspector-section {
   display: flex;
   flex-direction: column;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding-bottom: 14px;
 }
 
@@ -370,7 +460,7 @@
   flex-direction: column;
   gap: 12px;
   margin-top: 10px;
-  max-height: 1200px;
+  max-height: 1500px;
   opacity: 1;
   overflow: hidden;
   box-sizing: border-box;
@@ -479,8 +569,8 @@
 
 /* Input Fields & Selects */
 .control-input, .control-select {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   padding: 8px 10px;
   font-family: var(--font-family);
@@ -492,15 +582,15 @@
   width: 100%;
 }
 
+.control-input:focus, .control-select:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .control-select option {
   background-color: #0f172a;
   color: var(--text-primary);
-}
-
-.control-input:focus, .control-select:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px var(--primary-glow);
-  background: rgba(255, 255, 255, 0.07);
 }
 
 textarea.control-input {
@@ -508,6 +598,40 @@ textarea.control-input {
   min-height: 50px;
   width: 100%;
   box-sizing: border-box;
+}
+
+/* --- Color Swatches --- */
+.color-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.swatch-btn {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  padding: 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.swatch-btn:hover {
+  transform: scale(1.25);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+}
+
+.swatch-btn.swatch-transparent {
+  background: linear-gradient(45deg, #bbb 25%, transparent 25%),
+              linear-gradient(-45deg, #bbb 25%, transparent 25%),
+              linear-gradient(45deg, transparent 75%, #bbb 75%),
+              linear-gradient(-45deg, transparent 75%, #bbb 75%);
+  background-size: 6px 6px;
+  background-position: 0 0, 0 3px, 3px -3px, -3px 0px;
+  background-color: white;
 }
 
 /* Color Picker Row */
@@ -523,7 +647,7 @@ textarea.control-input {
   width: 32px;
   height: 32px;
   border-radius: 6px;
-  border: 1.5px solid rgba(255,255,255,0.1);
+  border: 1.5px solid rgba(255,255,255,0.15);
   cursor: pointer;
   position: relative;
   overflow: hidden;
@@ -554,8 +678,8 @@ textarea.control-input {
 
 .align-btn {
   flex: 1;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
   padding: 8px 4px;
   color: var(--text-secondary);
@@ -582,6 +706,151 @@ textarea.control-input {
   gap: 8px;
   box-sizing: border-box;
   width: 100%;
+}
+
+/* --- Font Upload Layout --- */
+.font-upload-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.custom-file-upload {
+  display: block;
+  padding: 10px 12px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+.custom-file-upload:hover {
+  border-color: var(--accent-color);
+  background: rgba(6, 182, 212, 0.05);
+  color: var(--text-primary);
+}
+
+#canvas-font-file-input {
+  display: none;
+}
+
+/* --- Layers Tab Node Styles --- */
+.layers-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.layers-node {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.layers-node:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateX(2px);
+}
+
+.layers-node.selected {
+  background: rgba(6, 182, 212, 0.15);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.15);
+}
+
+.layers-node.parent-node { border-left: 3px solid var(--primary-color); }
+.layers-node.child-node { border-left: 3px solid var(--success-color); }
+.layers-node.sibling-node { border-left: 3px solid rgba(255, 255, 255, 0.25); }
+
+.node-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.node-tag {
+  font-weight: 700;
+  font-family: monospace;
+  color: var(--accent-color);
+}
+
+.node-class {
+  color: var(--text-secondary);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.node-type-label {
+  font-size: 9px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.layers-node.selected .node-type-label {
+  background: var(--accent-color);
+  color: #000;
+}
+
+.node-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.node-action-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-size: 11px;
+}
+
+.node-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.node-action-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--danger-color);
 }
 
 /* Inspector Footer */
@@ -637,7 +906,7 @@ textarea.control-input {
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .btn-danger {
@@ -677,6 +946,8 @@ textarea.control-input {
 
 .canvas-modal {
   background: var(--bg-glass);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
   border: 1px solid var(--border-glass);
   border-radius: 16px;
   box-shadow: var(--shadow-premium);
@@ -721,7 +992,7 @@ textarea.control-input {
 }
 
 .code-container {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.35);
   border: 1px solid var(--border-glass);
   border-radius: 8px;
   padding: 12px;
@@ -754,7 +1025,8 @@ textarea.control-input {
 }
 
 .canvas-toast {
-  background: var(--bg-glass);
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
   border: 1px solid var(--border-glass);
   border-radius: 8px;
   padding: 12px 20px;
@@ -767,6 +1039,7 @@ textarea.control-input {
   transform: translateY(20px);
   opacity: 0;
   animation: slide-in 0.3s forwards cubic-bezier(0.16, 1, 0.3, 1);
+  color: #ffffff;
 }
 
 .canvas-toast.toast-success { border-left: 3px solid var(--success-color); }
